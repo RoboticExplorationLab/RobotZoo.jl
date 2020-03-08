@@ -2,3 +2,11 @@ name = "RobotZoo"
 uuid = "74be38bb-dcc2-4b9e-baf3-d6373cd95f10"
 authors = ["Brian Jackson <bjack205@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+DifferentialRotations = "67b05b69-bfda-4565-9187-7150922e6889"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+Dynamics = "38ceca67-d8d3-44e8-9852-78a5596522e1"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
