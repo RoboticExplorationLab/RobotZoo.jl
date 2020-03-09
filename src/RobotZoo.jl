@@ -7,6 +7,7 @@ using DifferentialRotations
 using LinearAlgebra
 
 import Dynamics: dynamics, forces, moments, wrenches, mass_matrix, inertia, inertia_inv, orientation
+import Dynamics: state_dim, control_dim
 
 include("acrobot.jl")
 include("car.jl")
