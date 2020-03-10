@@ -2,7 +2,7 @@ module RobotZoo
 
 using StaticArrays
 using Parameters
-using Dynamics
+using RobotDynamics
 using DifferentialRotations
 using LinearAlgebra
 
