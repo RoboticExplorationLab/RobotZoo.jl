@@ -11,7 +11,7 @@ struct Quadrotor{R} <: RigidBody{R}
     km::Float64
     info::Dict{Symbol,Any}
 end
-Dynamics.control_dim(::Quadrotor) = 4
+control_dim(::Quadrotor) = 4
 
 function Quadrotor{R}(;
         mass=0.5,

@@ -61,7 +61,7 @@ using StaticArrays
     g_thr::T = 0.006763; #maps control input to Newtons of thrust
     g_mot::T = 3000*2*pi/60*7/255; #maps control input to motor rad/sec
 end
-Dynamics.control_dim(::YakPlane) = 4
+control_dim(::YakPlane) = 4
 
 (::Type{<:YakPlane})(::Type{Rot}=MRP{Float64}) where Rot =
     YakPlane{Rot,Float64}()
@@ -69,7 +69,7 @@ Dynamics.control_dim(::YakPlane) = 4
 trim_controls(model::YakPlane) = @SVector [41.6666, 106, 74.6519, 106]
 
 function dynamics(p::YakPlane, x::SVector, u::SVector)
-    r,q,v,w = Dynamics.parse_state(p, x)
+    r,q,v,w = RobotDynamics.parse_state(p, x)
 
     Q = rotmat(q)
 
@@ -183,7 +183,7 @@ function dynamics(p::YakPlane, x::SVector, u::SVector)
     #         F/p.m;
     #         p.Jinv*T];
     #
-    Dynamics.build_state(p, rdot, qdot, vdot, wdot)
+    RobotDynamics.build_state(p, rdot, qdot, vdot, wdot)
 end
 
 "Angle of attack"
