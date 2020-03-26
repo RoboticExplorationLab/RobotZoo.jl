@@ -27,3 +27,6 @@ Base.size(::DoubleIntegrator{N,M}) where {N,M} = N,M
     us = [:(u[$i]) for i = 1:M]
     :(SVector{$N}($(vel...),$(us...)))
 end
+
+Base.position(::DoubleIntegrator{<:Any,2}, x) = @SVector [x[1], x[2], 0]
+orientation(::DoubleIntegrator, x) = UnitQuaternion(I)

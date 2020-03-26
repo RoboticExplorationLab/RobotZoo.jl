@@ -3,7 +3,7 @@ module RobotZoo
 using StaticArrays
 using Parameters
 using RobotDynamics
-using DifferentialRotations
+using Rotations
 using LinearAlgebra
 
 import RobotDynamics: dynamics, forces, moments, wrenches, mass_matrix, inertia, inertia_inv, orientation

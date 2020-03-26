@@ -21,15 +21,10 @@ function Quadrotor{R}(;
         kf=1.0,
         km=0.0245,
         info=Dict{Symbol,Any}()) where R
-    if R <: UnitQuaternion{T,IdentityMap} where T
-        if use_rot == true
-            use_rot = false
-        end
-    end
     Quadrotor{R}(13,4,mass,J,inv(J),gravity,motor_dist,kf,km,info)
 end
 
-(::Type{Quadrotor})(;kwargs...) = Quadrotor{UnitQuaternion{Float64,CayleyMap}}(;kwargs...)
+(::Type{Quadrotor})(;kwargs...) = Quadrotor{UnitQuaternion{Float64}}(;kwargs...)
 
 function trim_controls(model::Quadrotor)
     @SVector fill(-model.gravity[3]*model.mass/4.0, size(model)[2])
