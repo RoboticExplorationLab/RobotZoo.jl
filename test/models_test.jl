@@ -35,12 +35,12 @@ car = RobotZoo.DubinsCar()
 # Cartpole
 cartpole = RobotZoo.Cartpole()
 @test size(cartpole) == (4,1)
-@test_broken num_allocs(cartpole) == 0
+@test num_allocs(cartpole) == 0
 
 # Quadrotor
 quad = RobotZoo.Quadrotor()
 @test size(quad) == (13,4)
-@test_broken num_allocs(cartpole) == 0
+@test num_allocs(cartpole) == 0
 
 
 # Test other functions
