@@ -71,7 +71,7 @@ trim_controls(model::YakPlane) = @SVector [41.6666, 106, 74.6519, 106]
 function dynamics(p::YakPlane, x::SVector, u::SVector)
     r,q,v,w = RobotDynamics.parse_state(p, x)
 
-    Q = rotmat(q)
+    Q = SMatrix(q)
 
     # control input
     thr  = u[1]; #Throttle command (0-255 as sent to RC controller)
@@ -174,7 +174,7 @@ function dynamics(p::YakPlane, x::SVector, u::SVector)
     T = T_rout + T_lout + T_rin + T_lin + T_elev + T_rud + cross((p.J*w + p.Jm*w_mot),w);
 
     rdot = v;
-    qdot = kinematics(q, w)
+    qdot = Rotations.kinematics(q, w)
     vdot = F/p.m
     wdot = p.Jinv*T
 
