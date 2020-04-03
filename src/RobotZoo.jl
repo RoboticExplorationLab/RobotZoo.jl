@@ -16,5 +16,6 @@ include("double_integrator.jl")
 include("pendulum.jl")
 include("quadrotor.jl")
 include("yak_plane.jl")
+include("satellite.jl")
 
 end # module
