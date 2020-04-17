@@ -10,6 +10,8 @@ Base.size(::Satellite) = 7,3
 Base.position(::Satellite, x::SVector) = @SVector zeros(3)
 orientation(::Satellite, x::SVector) = UnitQuaternion(x[4], x[5], x[6], x[7])
 
+RobotDynamics.LieState(::Satellite) = RobotDynamics.LieState(UnitQuaternion{Float64}, (3,0))
+
 function dynamics(model::Satellite, x::SVector, u::SVector)
     ω = @SVector [x[1], x[2], x[3]]
     q = normalize(@SVector [x[4], x[5], x[6], x[7]])
@@ -20,42 +22,42 @@ function dynamics(model::Satellite, x::SVector, u::SVector)
     return [ωdot; qdot]
 end
 
-function RobotDynamics.state_diff(model::Satellite, x::SVector, x0::SVector)::SVector{6}
-    ω = @SVector [x[1], x[2], x[3]]
-    q = @SVector [x[4], x[5], x[6], x[7]]
-    ω0 = @SVector [x0[1], x0[2], x0[3]]
-    q0 = @SVector [x0[4], x0[5], x0[6], x0[7]]
-
-    δω = ω - ω0
-    δq = lmult(q0)'q
-    ϕ = @SVector [δq[2]/δq[1], δq[3]/δq[1], δq[4]/δq[1]]
-    return [δω; ϕ]
-end
-
-function RobotDynamics.state_diff_jacobian!(G0, model::Satellite, x::SVector)
-    q = @SVector [x[4], x[5], x[6], x[7]]
-    G = lmult(q)*hmat()
-    G0 .=  @SMatrix [1 0 0 0 0 0;
-                     0 1 0 0 0 0;
-                     0 0 1 0 0 0;
-                     0 0 0 G[1] G[5] G[ 9];
-                     0 0 0 G[2] G[6] G[10];
-                     0 0 0 G[3] G[7] G[11];
-                     0 0 0 G[4] G[8] G[12];
-                     ]
-end
-
-function RobotDynamics.∇²differential!(∇G, model::Satellite, x::SVector, dx::AbstractVector)
-    q = @SVector [x[4], x[5], x[6], x[7]]
-    dq = @SVector [dx[4], dx[5], dx[6], dx[7]]
-    b = -q'dq
-    ∇G[4,4] = b
-    ∇G[5,5] = b
-    ∇G[6,6] = b
-    return nothing
-end
-
-RobotDynamics.state_diff_size(::Satellite) = 6
+# function RobotDynamics.state_diff(model::Satellite, x::SVector, x0::SVector)::SVector{6}
+#     ω = @SVector [x[1], x[2], x[3]]
+#     q = @SVector [x[4], x[5], x[6], x[7]]
+#     ω0 = @SVector [x0[1], x0[2], x0[3]]
+#     q0 = @SVector [x0[4], x0[5], x0[6], x0[7]]
+#
+#     δω = ω - ω0
+#     δq = lmult(q0)'q
+#     ϕ = @SVector [δq[2]/δq[1], δq[3]/δq[1], δq[4]/δq[1]]
+#     return [δω; ϕ]
+# end
+#
+# function RobotDynamics.state_diff_jacobian!(G0, model::Satellite, x::SVector)
+#     q = @SVector [x[4], x[5], x[6], x[7]]
+#     G = lmult(q)*hmat()
+#     G0 .=  @SMatrix [1 0 0 0 0 0;
+#                      0 1 0 0 0 0;
+#                      0 0 1 0 0 0;
+#                      0 0 0 G[1] G[5] G[ 9];
+#                      0 0 0 G[2] G[6] G[10];
+#                      0 0 0 G[3] G[7] G[11];
+#                      0 0 0 G[4] G[8] G[12];
+#                      ]
+# end
+#
+# function RobotDynamics.∇²differential!(∇G, model::Satellite, x::SVector, dx::AbstractVector)
+#     q = @SVector [x[4], x[5], x[6], x[7]]
+#     dq = @SVector [dx[4], dx[5], dx[6], dx[7]]
+#     b = -q'dq
+#     ∇G[4,4] = b
+#     ∇G[5,5] = b
+#     ∇G[6,6] = b
+#     return nothing
+# end
+#
+# RobotDynamics.state_diff_size(::Satellite) = 6
 
 # function state_diff_jacobian!(G, model::Satellite, Z::Traj)
 #     for k in eachindex(Z)
