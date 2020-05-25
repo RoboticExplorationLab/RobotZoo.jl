@@ -1,15 +1,12 @@
 
 struct Cartpole{T} <: AbstractModel
-    n::Int
-    m::Int
     mc::T
     mp::T
     l::T
     g::T
 end
 
-Cartpole() = Cartpole(4,1,
-    1.0, 0.2, 0.5, 9.81)
+Cartpole() = Cartpole(1.0, 0.2, 0.5, 9.81)
 
 function dynamics(model::Cartpole, x, u)
     mc = model.mc  # mass of the cart in kg (10)
@@ -31,3 +28,6 @@ function dynamics(model::Cartpole, x, u)
     qdd = -H\(C*qd + G - B*u[1])
     return [qd; qdd]
 end
+
+RobotDynamics.state_dim(::Cartpole) = 4
+RobotDynamics.control_dim(::Cartpole) = 1
