@@ -9,6 +9,7 @@ struct Quadrotor{R} <: RigidBody{R}
     motor_dist::Float64
     kf::Float64
     km::Float64
+    bodyframe::Bool  # velocity in body frame?
     info::Dict{Symbol,Any}
 end
 control_dim(::Quadrotor) = 4
@@ -20,11 +21,14 @@ function Quadrotor{R}(;
         motor_dist=0.1750,
         kf=1.0,
         km=0.0245,
+        bodyframe=false,
         info=Dict{Symbol,Any}()) where R
-    Quadrotor{R}(13,4,mass,J,inv(J),gravity,motor_dist,kf,km,info)
+    Quadrotor{R}(13,4,mass,J,inv(J),gravity,motor_dist,kf,km,bodyframe,info)
 end
 
 (::Type{Quadrotor})(;kwargs...) = Quadrotor{UnitQuaternion{Float64}}(;kwargs...)
+
+@inline RobotDynamics.velocity_frame(model::Quadrotor) = model.bodyframe ? :body : :world
 
 function trim_controls(model::Quadrotor)
     @SVector fill(-model.gravity[3]*model.mass/4.0, size(model)[2])
@@ -41,10 +45,10 @@ function forces(model::Quadrotor, x, u)
     w3 = u[3]
     w4 = u[4]
 
-    F1 = max(0,kf*w1);
-    F2 = max(0,kf*w2);
-    F3 = max(0,kf*w3);
-    F4 = max(0,kf*w4);
+    F1 = max(-Inf,kf*w1);
+    F2 = max(-Inf,kf*w2);
+    F3 = max(-Inf,kf*w3);
+    F4 = max(-Inf,kf*w4);
     F = @SVector [0., 0., F1+F2+F3+F4] #total rotor force in body frame
 
     m*g + q*F # forces in world frame
@@ -75,7 +79,7 @@ end
 function wrenches(model::Quadrotor, x::SVector, u::SVector)
     F = forces(model, x, u)
     M = moments(model, x, u)
-    return F,M
+    return [F; M]
 
     q = orientation(model, x)
     C = forceMatrix(model)
@@ -95,7 +99,7 @@ function forceMatrix(model::Quadrotor)
     kf, km = model.kf, model.km
     L = model.motor_dist
     @SMatrix [
-       -kf  -kf  -kf  -kf;
+        kf   kf   kf   kf;
         0    L*kf 0   -L*kf;
        -L*kf 0    L*kf 0;
         km  -km   km  -km;
@@ -103,6 +107,12 @@ function forceMatrix(model::Quadrotor)
 end
 
 
-inertia(model::Quadrotor, x, u) = model.J
-inertia_inv(model::Quadrotor, x, u) = model.Jinv
-mass_matrix(model::Quadrotor, x, u) = Diagonal(@SVector fill(model.mass,3))
+RobotDynamics.inertia(model::Quadrotor) = model.J
+RobotDynamics.inertia_inv(model::Quadrotor) = model.Jinv
+RobotDynamics.mass(model::Quadrotor) = model.mass
+
+function Base.zeros(model::Quadrotor{R}) where R
+    x = RobotDynamics.build_state(model, zero(RBState))
+    u = @SVector fill(-model.mass*model.gravity[end]/4, 4)
+    return x,u
+end
