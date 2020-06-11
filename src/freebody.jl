@@ -26,4 +26,4 @@ Base.size(::FreeBody{<:Rotation}) = 12,6
 
 inertia(model::FreeBody, x, u) = model.J
 inertia_inv(model::FreeBody, x, u) = model.Jinv
-mass_matrix(model::FreeBody, x, u) = Diagonal(@SVector fill(model.mass,3))
+mass(model::FreeBody, x, u) = model.mass 

@@ -45,10 +45,10 @@ function forces(model::Quadrotor, x, u)
     w3 = u[3]
     w4 = u[4]
 
-    F1 = max(-Inf,kf*w1);
-    F2 = max(-Inf,kf*w2);
-    F3 = max(-Inf,kf*w3);
-    F4 = max(-Inf,kf*w4);
+    F1 = max(0,kf*w1);
+    F2 = max(0,kf*w2);
+    F3 = max(0,kf*w3);
+    F4 = max(0,kf*w4);
     F = @SVector [0., 0., F1+F2+F3+F4] #total rotor force in body frame
 
     m*g + q*F # forces in world frame
