@@ -1,7 +1,8 @@
 using RobotZoo
+using RobotDynamics
 using Test
 using StaticArrays
-import RobotZoo: KnotPoint, dynamics, jacobian!, discrete_dynamics, discrete_jacobian!, RK3
+using BenchmarkTools
 
 @testset "allocations" begin
     include("models_test.jl")

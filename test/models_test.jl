@@ -1,18 +1,30 @@
-function num_allocs(model)
+function num_allocs(model; evals=10, samples=2)
     dt = 0.1
     x, u = rand(model)
     n,m = size(model)
     z = KnotPoint(x, u, dt)
     ∇c  = zeros(n,n+m)
-    dynamics(model, x, u)
-    jacobian!(∇c, model, z)
-    discrete_dynamics(RK3, model, x, u, z.t, dt)
-    discrete_jacobian!(RK3, ∇c, model, z)
-    allocs  = @allocated dynamics(model, x, u)
-    allocs += @allocated jacobian!(∇c, model, z)
-    allocs += @allocated discrete_dynamics(RK3, model, x, u, z.t, dt)
-    allocs += @allocated discrete_jacobian!(RK3, ∇c, model, z)
+    b1 = @benchmark dynamics($model, $x, $u) evals=evals samples=samples
+    b2 = @benchmark jacobian!($∇c, $model, $z) evals=evals samples=samples
+    b3 = @benchmark discrete_dynamics($RK3, $model, $x, $u, $z.t, $dt) evals=evals samples=samples
+    b4 = @benchmark discrete_jacobian!($RK3, $∇c, $model, $z) evals=evals samples=samples
+    return b1.allocs + b2.allocs + b3.allocs + b4.allocs
 end
+
+# Acrobot
+acrobot = RobotZoo.Acrobot()
+@test size(acrobot) == (4,1)
+@test num_allocs(acrobot) == 0
+
+# Car
+car = RobotZoo.DubinsCar()
+@test size(car) == (3,2)
+@test num_allocs(car) == 0
+
+# Cartpole
+cartpole = RobotZoo.Cartpole()
+@test size(cartpole) == (4,1)
+@test num_allocs(cartpole) == 0
 
 # Double Integrator
 dim = 3
@@ -27,21 +39,15 @@ pend = RobotZoo.Pendulum()
 @test size(pend) == (2,1)
 @test num_allocs(pend) == 0
 
-# Car
-car = RobotZoo.DubinsCar()
-@test size(car) == (3,2)
-@test num_allocs(car) == 0
-
-# Cartpole
-cartpole = RobotZoo.Cartpole()
-@test size(cartpole) == (4,1)
-@test num_allocs(cartpole) == 0
-
 # Quadrotor
 quad = RobotZoo.Quadrotor()
 @test size(quad) == (13,4)
-@test num_allocs(cartpole) == 0
+@test num_allocs(quad) == 0
 
+# Yak Plane
+yak = RobotZoo.YakPlane()
+@test size(yak) == (12,4)
+@test num_allocs(yak) == 0
 
 # Test other functions
 dt = 0.1
