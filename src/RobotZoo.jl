@@ -17,5 +17,6 @@ include("pendulum.jl")
 include("quadrotor.jl")
 include("yak_plane.jl")
 include("satellite.jl")
+include("freebody.jl")
 
 end # module

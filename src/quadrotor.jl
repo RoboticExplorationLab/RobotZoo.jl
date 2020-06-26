@@ -1,4 +1,23 @@
 
+"""
+    Quadrotor{R}
+
+A standard quadrotor model, with simple aerodynamic forces. The orientation is represent by
+a general rotation `R`. The body z-axis point is vertical, so positive controls cause acceleration
+in the positive z direction.
+
+# Constructor
+    Quadrotor(; kwargs...)
+    Quadrotor{R}(; kwargs...)
+
+where `R <: Rotation{3}` and defaults to `UnitQuaternion{Float64}` if omitted. The keyword arguments are
+* `mass` - mass of the quadrotor, in kg (default = 0.5)
+* `J` - inertia of the quadrotor, in kg⋅m² (default = `Diagonal([0.0023, 0.0023, 0.004])`)
+* `gravity` - gravity vector, in kg/m² (default = [0,0,-9.81])
+* `motor_dist` - distane between the motors, in m (default = 0.1750)
+* `km` - motor torque constant (default = 0.0245)
+* `kf` - motor force constant (default = 1.0)
+"""
 struct Quadrotor{R} <: RigidBody{R}
     n::Int
     m::Int

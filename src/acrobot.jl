@@ -1,8 +1,21 @@
 
+"""
+    Acrobot{T}
+
+A double-pendulum with actuation only at the elbow joint. It has 4 states and 1 control.
+
+# Constructor
+    Acrobot(; kwargs...)
+
+with keyword arguments:
+* `l` - `SVector{2,T}` of link lengths
+* `m` - `SVector{2,T}` of link masses
+* `J` - `SVector{2,T}` of link inertias
+"""
 @with_kw struct Acrobot{T} <: AbstractModel
     l::SVector{2,T} = @SVector [1.0, 1.0]
     m::SVector{2,T} = @SVector [1.0, 1.0]
-    J::SVector{2,SVector{3,T}} = @SVector [(@SVector ones(3)), (@SVector ones(3))]
+    J::SVector{2,T} = @SVector [1.0, 1.0]
 end
 
 function dynamics(model::Acrobot, x, u)
@@ -17,9 +30,9 @@ function dynamics(model::Acrobot, x, u)
     c12 = cos(θ1 + θ2)
 
     # mass matrix
-    m11 = m1*l1^2 + J1[3] + m2*(l1^2 + l2^2 + 2*l1*l2*c2) + J2[3]
-    m12 = m2*(l2^2 + l1*l2*c2 + J2[3])
-    m22 = l2^2*m2 + J2[3]
+    m11 = m1*l1^2 + J1 + m2*(l1^2 + l2^2 + 2*l1*l2*c2) + J2
+    m12 = m2*(l2^2 + l1*l2*c2 + J2)
+    m22 = l2^2*m2 + J2
     M = @SMatrix [m11 m12; m12 m22]
 
     # bias term

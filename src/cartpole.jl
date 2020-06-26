@@ -1,4 +1,18 @@
+"""
+    Cartpole{T}
 
+Canoncial nonlinear system, with a prismatic joint followed by a revolute joint, or a pendulum
+attached to a cart, that is only actuated by sliding the cart. It has 4 states and 1 control.
+
+# Constructors
+    Cartpole(; kwargs...)
+
+with keyword arguments
+* `mc` - mass of the cart, in kg (default = 1)
+* `mp` - mass of the pendulum, in kg (default = 0.2)
+* `l` - length of the pendulum, in m (default = 0.5)
+* `g` - gravity, in m/s² (default = 9.81)
+"""
 struct Cartpole{T} <: AbstractModel
     mc::T
     mp::T

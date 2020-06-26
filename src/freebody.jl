@@ -1,11 +1,32 @@
-@with_kw struct FreeBody{R,T} <: RigidBody{R}
-    mass::T = 1.0
-    J::Diagonal{T,SVector{3,T}} = Diagonal(@SVector ones(3))
-    Jinv::Diagonal{T,SVector{3,T}} = Diagonal(@SVector ones(3))
+"""
+    FreeBody{R,T}
+
+A rigid body moving freely in 3-dimensional space, with direct control of both force and torque
+at the center of mass, for a total of 6 controls.
+
+# Constructors
+    FreeBody{R,T}(mass, J)
+    FreeBody(R=UnitQuaternion{Float64}; kwargs...)
+
+where `R <: Rotation{3}` with keyword arguments
+* `mass` - mass of the body
+* `J` - a vector of the three diagonal elements of the inertia matrix
+"""
+struct FreeBody{R,T} <: RigidBody{R}
+    mass::T
+    J::Diagonal{T,SVector{3,T}}
+    Jinv::Diagonal{T,SVector{3,T}}
+    function FreeBody{R,T}(mass::Real, Jdiag::AbstractVector) where {R,T}
+        @assert length(Jdiag) == 3 "inertia diagonal must have only 3 entries"
+        @assert mass > 0 "mass must be positive"
+        J = SVector{3}(Jdiag)
+        new{R,T}(mass, J, inv(J))
+    end
 end
 RobotDynamics.control_dim(::FreeBody) = 6
 
-(::FreeBody)(;kwargs...) = FreeBody{UnitQuaternion{Float64,CayleyMap},Float64}(;kwargs...)
+FreeBody(R=UnitQuaternion{Float64}; mass=1.0, J=@SVector ones(3)) =
+    FreeBody{R,promote_type(typeof(mass), eltype(J))}(mass, J)
 
 function forces(model::FreeBody, x::StaticVector, u::StaticVector)
     q = orientation(model, x)

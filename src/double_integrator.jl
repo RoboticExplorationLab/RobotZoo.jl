@@ -1,4 +1,15 @@
+"""
+    DoubleIntegrator{N,M}
 
+A simple point mass in `M` dimensions with direct control over acceleration. Has `N` state
+and `M` controls.
+
+# Constructor
+    DoubleIntegrator([D=1])
+
+where `D` is the dimensionality of the space in which the particle moves. For example,
+for a particle in 3D space, `D = 3`.
+"""
 struct DoubleIntegrator{N,M} <: AbstractModel
     pos::SVector{M,Int}
     vel::SVector{M,Int}

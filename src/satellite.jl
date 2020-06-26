@@ -1,5 +1,17 @@
 import Rotations: lmult, vmat, hmat
 
+"""
+    Satellite
+
+A simple satellite model, modeling only the attitude dynamics with no external forces. Has
+direct control over torques about the body axes.
+
+# Constructor
+    Satellite()
+    Satellite(J)
+
+where `J` is a `Diagonal` inertia matrix.
+"""
 struct Satellite <: LieGroupModel
     J::Diagonal{Float64,SVector{3,Float64}}
 end

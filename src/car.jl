@@ -1,3 +1,13 @@
+"""
+    DubinsCar
+
+A simple unicyle model with state vector  `[x,y,θ]` and control vector `[v,ω]`.
+
+# Constructor
+    DubinsCar(; [radius=0.175])
+
+where `radius` is the radius of the car, used only for plotting and obstacle avoidance constraints.
+"""
 @with_kw struct DubinsCar <: AbstractModel
     radius::Float64 = 0.175  # [m] radius of a Roomba
 end
