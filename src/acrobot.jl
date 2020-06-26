@@ -1,8 +1,3 @@
-# traj_folder = joinpath(dirname(pathof(TrajectoryOptimization)),"..")
-# urdf_folder = joinpath(traj_folder, "dynamics/urdf")
-# urdf_doublependulum = joinpath(urdf_folder, "doublependulum.urdf")
-#
-# acrobot_model = Model(urdf_doublependulum,[0.;1.]) # underactuated, only control for second "elbow" joint
 
 @with_kw struct Acrobot{T} <: AbstractModel
     l::SVector{2,T} = @SVector [1.0, 1.0]
@@ -48,4 +43,5 @@ function dynamics(model::Acrobot, x, u)
     return @SVector [θ1dot, θ2dot, θddot[1], θddot[2]]
 end
 
-Base.size(::Acrobot) = 4,1
+RobotDynamics.state_dim(::Acrobot) = 4
+RobotDynamics.control_dim(::Acrobot) = 1

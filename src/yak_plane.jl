@@ -63,12 +63,14 @@ using StaticArrays
 end
 control_dim(::YakPlane) = 4
 
-(::Type{<:YakPlane})(::Type{Rot}=MRP{Float64}) where Rot =
-    YakPlane{Rot,Float64}()
+(::Type{<:YakPlane})(::Type{Rot}=MRP{Float64}; kwargs...) where Rot =
+    YakPlane{Rot,Float64}(; kwargs...)
+
+YakPlane(; kwargs...) = YakPlane(MRP{Float64}; kwargs...)
 
 trim_controls(model::YakPlane) = @SVector [41.6666, 106, 74.6519, 106]
 
-function dynamics(p::YakPlane, x::SVector, u::SVector)
+function RobotDynamics.dynamics(p::YakPlane, x::StaticVector, u::StaticVector, t=0)
     r,q,v,w = RobotDynamics.parse_state(p, x)
 
     Q = SMatrix(q)

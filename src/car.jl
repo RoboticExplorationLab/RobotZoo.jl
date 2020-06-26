@@ -1,19 +1,8 @@
-# # Car
-#
-# function car_dynamics!(ẋ::AbstractVector,x::AbstractVector,u::AbstractVector)
-#     ẋ[1] = u[1]*cos(x[3])
-#     ẋ[2] = u[1]*sin(x[3])
-#     ẋ[3] = u[2]
-#     return nothing
-# end
-# n,m = 3,2
-#
-# car = Model(car_dynamics!,n,m)
-
 @with_kw struct DubinsCar <: AbstractModel
     radius::Float64 = 0.175  # [m] radius of a Roomba
 end
-Base.size(::DubinsCar) = 3,2
+RobotDynamics.state_dim(::DubinsCar) = 3
+RobotDynamics.control_dim(::DubinsCar) = 2
 
 function dynamics(::DubinsCar,x,u)
     ẋ = @SVector [u[1]*cos(x[3]),
