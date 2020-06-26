@@ -45,7 +45,7 @@ quad = RobotZoo.Quadrotor()
 @test num_allocs(quad) == 0
 
 # Yak Plane
-yak = RobotZoo.YakPlane()
+yak = RobotZoo.YakPlane(MRP{Float64})
 @test size(yak) == (12,4)
 @test num_allocs(yak) == 0
 

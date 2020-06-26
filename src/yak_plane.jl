@@ -66,8 +66,6 @@ control_dim(::YakPlane) = 4
 (::Type{<:YakPlane})(::Type{Rot}=MRP{Float64}; kwargs...) where Rot =
     YakPlane{Rot,Float64}(; kwargs...)
 
-YakPlane(; kwargs...) = YakPlane(MRP{Float64}; kwargs...)
-
 trim_controls(model::YakPlane) = @SVector [41.6666, 106, 74.6519, 106]
 
 function RobotDynamics.dynamics(p::YakPlane, x::StaticVector, u::StaticVector, t=0)
