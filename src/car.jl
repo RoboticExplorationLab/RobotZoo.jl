@@ -20,8 +20,8 @@ function dynamics(::DubinsCar,x,u)
                   u[2]]
 end
 
-Base.position(::DubinsCar, x::SVector) = @SVector [x[1], x[2], 0.0]
-orientation(::DubinsCar, x::SVector) = expm(x[3]*@SVector [0,0,1.])
+Base.position(::DubinsCar, x) = @SVector [x[1], x[2], 0.0]
+orientation(::DubinsCar, x) = expm(x[3]*@SVector [0,0,1.])
 
 # using Plots
 # function Plots.plot(model::DubinsCar, Z::Traj; kwargs...)

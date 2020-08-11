@@ -45,3 +45,6 @@ end
 
 RobotDynamics.state_dim(::Cartpole) = 4
 RobotDynamics.control_dim(::Cartpole) = 1
+
+# Base.position(::Cartpole, x::StaticVector) = SA[0,x[1],0]
+# RobotDynamics.orientation(::Cartpole, x::StaticVector) = UnitQuaternion(expm(SA[1,0,0]*x[2]))

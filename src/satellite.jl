@@ -19,8 +19,8 @@ end
 Satellite() = Satellite(Diagonal(@SVector ones(3)))
 
 RobotDynamics.control_dim(::Satellite) = 3
-Base.position(::Satellite, x::SVector) = @SVector zeros(3)
-orientation(::Satellite, x::SVector) = UnitQuaternion(x[4], x[5], x[6], x[7])
+Base.position(::Satellite, x) = @SVector zeros(3)
+orientation(::Satellite, x) = UnitQuaternion(x[4], x[5], x[6], x[7])
 
 RobotDynamics.LieState(::Satellite) = RobotDynamics.LieState(UnitQuaternion{Float64}, (3,0))
 
