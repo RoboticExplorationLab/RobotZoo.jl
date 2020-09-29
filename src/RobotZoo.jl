@@ -19,4 +19,6 @@ include("yak_plane.jl")
 include("satellite.jl")
 include("freebody.jl")
 
+include("LinearModels.jl")
+
 end # module
