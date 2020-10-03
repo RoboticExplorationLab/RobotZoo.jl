@@ -13,12 +13,13 @@ for a particle in 3D space, `D = 3`.
 struct DoubleIntegrator{N,M} <: AbstractModel
     pos::SVector{M,Int}
     vel::SVector{M,Int}
+    gravity::SVector{M,Float64}
 end
 
-function DoubleIntegrator(D=1)
+function DoubleIntegrator(D=1; gravity=zeros(D))
     pos = SVector{D,Int}(1:D)
     vel = SVector{D,Int}(D .+ (1:D))
-    DoubleIntegrator{2D,D}(pos,vel)
+    DoubleIntegrator{2D,D}(pos,vel, gravity)
 end
 
 RobotDynamics.state_dim(::DoubleIntegrator{N,M}) where {N,M} = N
@@ -27,7 +28,7 @@ RobotDynamics.control_dim(::DoubleIntegrator{N,M}) where {N,M} = M
 
 @generated function dynamics(di::DoubleIntegrator{N,M}, x, u) where {N,M}
     vel = [:(x[$i]) for i = M+1:N]
-    us = [:(u[$i]) for i = 1:M]
+    us = [:(u[$i] + di.gravity[$i]) for i = 1:M]
     :(SVector{$N}($(vel...),$(us...)))
 end
 
