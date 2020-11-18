@@ -19,6 +19,8 @@ b1 = @benchmark dynamics($linmodel, $z)
 b2 = @benchmark dynamics($model, $z)
 @test minimum(b2) < minimum(b1)  # standard model is faster since it avoids matrix mult
 
-b1 = @benchmark jacobian!($F1, $linmodel, $z)
-b2 = @benchmark jacobian!($F2, $model, $z)
-@test minimum(b1) < minimum(b2)  # linear model Jacobian is faster
+if !haskey(ENV, "CI")
+    b1 = @benchmark jacobian!($F1, $linmodel, $z)
+    b2 = @benchmark jacobian!($F2, $model, $z)
+    @test minimum(b1) < minimum(b2)  # linear model Jacobian is faster
+end
