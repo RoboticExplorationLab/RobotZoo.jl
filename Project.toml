@@ -1,7 +1,7 @@
 name = "RobotZoo"
 uuid = "74be38bb-dcc2-4b9e-baf3-d6373cd95f10"
 authors = ["Brian Jackson <bjack205@gmail.com>"]
-version = "0.1.2"
+version = "0.1.3"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
