@@ -19,8 +19,6 @@ where `R <: Rotation{3}` and defaults to `UnitQuaternion{Float64}` if omitted. T
 * `kf` - motor force constant (default = 1.0)
 """
 struct Quadrotor{R} <: RigidBody{R}
-    n::Int
-    m::Int
     mass::Float64
     J::Diagonal{Float64,SVector{3,Float64}}
     Jinv::Diagonal{Float64,SVector{3,Float64}}
@@ -29,7 +27,7 @@ struct Quadrotor{R} <: RigidBody{R}
     kf::Float64
     km::Float64
     bodyframe::Bool  # velocity in body frame?
-    info::Dict{Symbol,Any}
+    ned::Bool
 end
 control_dim(::Quadrotor) = 4
 
@@ -41,8 +39,9 @@ function Quadrotor{R}(;
         kf=1.0,
         km=0.0245,
         bodyframe=false,
-        info=Dict{Symbol,Any}()) where R
-    Quadrotor{R}(13,4,mass,J,inv(J),gravity,motor_dist,kf,km,bodyframe,info)
+        ned=false,
+    ) where R
+    Quadrotor{R}(mass,J,inv(J),gravity,motor_dist,kf,km,bodyframe,ned)
 end
 
 (::Type{Quadrotor})(;kwargs...) = Quadrotor{UnitQuaternion{Float64}}(;kwargs...)
@@ -69,8 +68,13 @@ function forces(model::Quadrotor, x, u)
     F3 = max(0,kf*w3);
     F4 = max(0,kf*w4);
     F = @SVector [0., 0., F1+F2+F3+F4] #total rotor force in body frame
+    if model.ned
+        F = SA[0,0,-F[3]]
+        g = -g
+    end
 
-    m*g + q*F # forces in world frame
+    f = m*g + q*F # forces in world frame
+    return f
 end
 
 function moments(model::Quadrotor, x, u)
@@ -93,6 +97,10 @@ function moments(model::Quadrotor, x, u)
     M3 = km*w3;
     M4 = km*w4;
     tau = @SVector [L*(F2-F4), L*(F3-F1), (M1-M2+M3-M4)] #total rotor torque in body frame
+    if model.ned
+        tau = SA[tau[1], -tau[2], -tau[3]]
+    end
+    return tau
 end
 
 function wrenches(model::Quadrotor, x::SVector, u::SVector)
