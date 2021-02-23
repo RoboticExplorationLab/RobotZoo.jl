@@ -8,6 +8,7 @@ Provides a handful of dynamics models of common robotic platforms, implemented u
 The following models are currently implemented:
 * Acrobot (`Acrobot`)
 * Dubins Car (unicycle model) (`DubinsCar`)
+* Kinematic Bicycle car model (`BicycleModel`)
 * Cartpole (`Cartpole`)
 * Double Integrator (`DoubleIntegrator`)
 * Pendulum (`Pendulum`)

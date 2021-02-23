@@ -21,6 +21,16 @@ car = RobotZoo.DubinsCar()
 @test size(car) == (3,2)
 @test num_allocs(car) == 0
 
+# Bicycle Car
+bicycle = RobotZoo.BicycleModel()
+@test size(bicycle) == (4,2)
+@test num_allocs(car) == 0
+
+bicycle = RobotZoo.BicycleModel(ref=:rear)
+@test size(bicycle) == (4,2)
+@test num_allocs(car) == 0
+
+
 # Cartpole
 cartpole = RobotZoo.Cartpole()
 @test size(cartpole) == (4,1)
