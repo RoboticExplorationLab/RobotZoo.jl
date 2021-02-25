@@ -30,6 +30,10 @@ bicycle = RobotZoo.BicycleModel(ref=:rear)
 @test size(bicycle) == (4,2)
 @test num_allocs(car) == 0
 
+# Planar Rocket
+rocket = RobotZoo.PlanarRocket()
+@test size(rocket) == (8,2)
+@test num_allocs(rocket) == 0
 
 # Cartpole
 cartpole = RobotZoo.Cartpole()
@@ -48,6 +52,8 @@ x,u = rand(di)
 pend = RobotZoo.Pendulum()
 @test size(pend) == (2,1)
 @test num_allocs(pend) == 0
+
+# Planar Rocket
 
 # Quadrotor
 quad = RobotZoo.Quadrotor()

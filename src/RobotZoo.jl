@@ -18,6 +18,7 @@ include("quadrotor.jl")
 include("yak_plane.jl")
 include("satellite.jl")
 include("freebody.jl")
+include("rocket.jl")
 
 include("LinearModels.jl")
 
