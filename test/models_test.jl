@@ -35,6 +35,11 @@ rocket = RobotZoo.PlanarRocket()
 @test size(rocket) == (8,2)
 @test num_allocs(rocket) == 0
 
+# Planar Quad
+quad = RobotZoo.PlanarQuadrotor()
+@test size(quad) == (6,2)
+@test num_allocs(rocket) == 0
+
 # Cartpole
 cartpole = RobotZoo.Cartpole()
 @test size(cartpole) == (4,1)
