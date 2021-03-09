@@ -16,8 +16,8 @@ control_dim(::PlanarQuadrotor) = 2
 function dynamics(model::PlanarQuadrotor, x, u)
     mass,g,ℓ,J = model.mass, model.g, model.ℓ, model.J
 
-    s,c = sincos(θ)
     θ = x[3]
+    s,c = sincos(θ)
     ẍ = (1/mass)*(u[1] + u[2])*s
     ÿ = (1/mass)*(u[1] + u[2])*c - g
     θddot = (1/J)*(ℓ/2)*(u[2] - u[1])
