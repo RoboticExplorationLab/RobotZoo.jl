@@ -20,7 +20,7 @@ struct Cartpole{T} <: AbstractModel
     g::T
 end
 
-Cartpole() = Cartpole(1.0, 0.2, 0.5, 9.81)
+Cartpole(; mc=1.0, mp=0.2, l=0.5, g=9,81) = Cartpole(mc, mp, l, g)
 
 function dynamics(model::Cartpole, x, u)
     mc = model.mc  # mass of the cart in kg (10)
