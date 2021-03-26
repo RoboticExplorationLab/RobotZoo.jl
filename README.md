@@ -27,7 +27,7 @@ To get more information on each model, refer to the documentation for each type,
 using RobotZoo
 using RobotDynamics
 
-model RobotZoo.Cartpole()
+model = RobotZoo.Cartpole()
 n,m = size(model)
 
 # Generate random state and control vector
