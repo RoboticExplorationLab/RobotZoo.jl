@@ -20,8 +20,8 @@ where `R <: Rotation{3}` and defaults to `UnitQuaternion{Float64}` if omitted. T
 """
 struct Quadrotor{R} <: RigidBody{R}
     mass::Float64
-    J::Diagonal{Float64,SVector{3,Float64}}
-    Jinv::Diagonal{Float64,SVector{3,Float64}}
+    J::SMatrix{3,3,Float64,9}
+    Jinv::SMatrix{3,3,Float64,9}
     gravity::SVector{3,Float64}
     motor_dist::Float64
     kf::Float64
@@ -41,6 +41,7 @@ function Quadrotor{R}(;
         bodyframe=false,
         ned=false,
     ) where R
+    @assert issymmetric(J)
     Quadrotor{R}(mass,J,inv(J),gravity,motor_dist,kf,km,bodyframe,ned)
 end
 
