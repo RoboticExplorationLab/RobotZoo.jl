@@ -1,4 +1,4 @@
-Base.@kwdef struct PlanarRocket{T} <: AbstractModel
+Base.@kwdef struct PlanarRocket{T} <: ContinuousDynamics
     g::T = 9.81   # gravity (m/s²)
     m::T = 100.0  # mass (kg)
     ℓ::T = 2.0    # length (m)

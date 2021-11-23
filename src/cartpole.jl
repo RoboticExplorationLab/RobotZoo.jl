@@ -13,7 +13,7 @@ with keyword arguments
 * `l` - length of the pendulum, in m (default = 0.5)
 * `g` - gravity, in m/s² (default = 9.81)
 """
-struct Cartpole{T} <: AbstractModel
+struct Cartpole{T} <: ContinuousDynamics 
     mc::T
     mp::T
     l::T
@@ -41,6 +41,10 @@ function dynamics(model::Cartpole, x, u)
 
     qdd = -H\(C*qd + G - B*u[1])
     return [qd; qdd]
+end
+
+function dynamics!(model::Cartpole, xdot, x, u)
+    xdot .= dynamics(model, x, u)
 end
 
 RobotDynamics.state_dim(::Cartpole) = 4

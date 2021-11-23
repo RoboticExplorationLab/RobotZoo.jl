@@ -1,5 +1,5 @@
 import TrajectoryOptimization: states
-struct CopyModel{K,N,M,L} <: AbstractModel
+struct CopyModel{K,N,M,L} <: ContinuousDynamics
     model::L
     ix::SVector{N,Int}
     iu::SVector{M,Int}
@@ -7,7 +7,7 @@ struct CopyModel{K,N,M,L} <: AbstractModel
     uinds::Vector{SVector{M,Int}}
 end
 
-function CopyModel(model::L, K::Int) where L <: AbstractModel
+function CopyModel(model::L, K::Int) where L <: ContinuousDynamics
     n,m = size(model)
     xind = SVector{n}(1:n)
     uind = SVector{m}(1:m)

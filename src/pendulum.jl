@@ -14,7 +14,7 @@ with keyword arguments
 * `I` - inertia, in kg⋅m² (default=0.25)
 * `g` - gravity, in kg/m² (default=9.81)
 """
-@with_kw mutable struct Pendulum{T} <: AbstractModel
+@with_kw mutable struct Pendulum{T} <: ContinuousDynamics
     mass::T = 1.
     length::T = 0.5
     b::T = 0.1

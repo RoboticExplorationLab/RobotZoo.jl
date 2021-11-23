@@ -6,7 +6,8 @@ using RobotDynamics
 using Rotations
 using LinearAlgebra
 
-import RobotDynamics: dynamics, forces, moments, wrenches, inertia, inertia_inv, orientation
+using RobotDynamics: ContinuousDynamics, RigidBody, LieGroupModel, ContinuousDynamics
+import RobotDynamics: dynamics!, dynamics, forces, moments, wrenches, inertia, inertia_inv, orientation
 import RobotDynamics: state_dim, control_dim
 
 include("acrobot.jl")

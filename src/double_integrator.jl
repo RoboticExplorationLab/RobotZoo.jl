@@ -10,7 +10,7 @@ and `M` controls.
 where `D` is the dimensionality of the space in which the particle moves. For example,
 for a particle in 3D space, `D = 3`.
 """
-struct DoubleIntegrator{N,M} <: AbstractModel
+struct DoubleIntegrator{N,M} <: ContinuousDynamics
     pos::SVector{M,Int}
     vel::SVector{M,Int}
     gravity::SVector{M,Float64}

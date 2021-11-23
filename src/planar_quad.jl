@@ -1,4 +1,4 @@
-struct PlanarQuadrotor <: AbstractModel
+struct PlanarQuadrotor <: ContinuousDynamics
     mass::Float64  # mass (kg)
     g::Float64     # gravity (m/s²)
     ℓ::Float64     # tip to tip distance (m)

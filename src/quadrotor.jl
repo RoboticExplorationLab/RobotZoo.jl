@@ -104,7 +104,7 @@ function moments(model::Quadrotor, x, u)
     return tau
 end
 
-function wrenches(model::Quadrotor, x::SVector, u::SVector)
+function wrenches(model::Quadrotor, x, u)
     F = forces(model, x, u)
     M = moments(model, x, u)
     return [F; M]

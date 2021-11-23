@@ -8,7 +8,7 @@ A simple unicyle model with state vector  `[x,y,θ]` and control vector `[v,ω]`
 
 where `radius` is the radius of the car, used only for plotting and obstacle avoidance constraints.
 """
-@with_kw struct DubinsCar <: AbstractModel
+@with_kw struct DubinsCar <: ContinuousDynamics
     radius::Float64 = 0.175  # [m] radius of a Roomba
 end
 RobotDynamics.state_dim(::DubinsCar) = 3
@@ -24,7 +24,7 @@ Base.position(::DubinsCar, x) = @SVector [x[1], x[2], 0.0]
 orientation(::DubinsCar, x) = expm(x[3]*@SVector [0,0,1.])
 
 """
-    BicycleModel <: AbstractModel
+    BicycleModel <: ContinuousDynamics
 
 Kinematic model of a car with front-wheel steering. Assumes no skid and models wheels on the same
 axel as a single wheel. The state is defined as `[x,y,θ,δ]` where `x` and `y` are the position,
@@ -42,7 +42,7 @@ with keyword arguments:
 * `L`: distance between the front and rear wheels
 * `lr`: distance from the center of gravity to the center of the rear wheel
 """
-@with_kw struct BicycleModel <: AbstractModel
+@with_kw struct BicycleModel <: ContinuousDynamics
     ref::Symbol = :cg
     L::Float64  = 2.7   # distance between wheels  (m)
     lr::Float64 = 1.5   # distance to rear wheels  (m)

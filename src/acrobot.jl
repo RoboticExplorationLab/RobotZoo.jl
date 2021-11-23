@@ -12,7 +12,7 @@ with keyword arguments:
 * `m` - `SVector{2,T}` of link masses
 * `J` - `SVector{2,T}` of link inertias
 """
-@with_kw struct Acrobot{T} <: AbstractModel
+@with_kw struct Acrobot{T} <: ContinuousDynamics
     l::SVector{2,T} = @SVector [1.0, 1.0]
     m::SVector{2,T} = @SVector [1.0, 1.0]
     J::SVector{2,T} = @SVector [1.0, 1.0]

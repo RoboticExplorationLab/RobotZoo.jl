@@ -1,7 +1,7 @@
 name = "RobotZoo"
 uuid = "74be38bb-dcc2-4b9e-baf3-d6373cd95f10"
 authors = ["Brian Jackson <bjack205@gmail.com>"]
-version = "0.2.3"
+version = "0.3.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -12,7 +12,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 Parameters = "0.12"
-RobotDynamics = "0.1, 0.2, 0.3"
-Rotations = "1"
+RobotDynamics = "0.4"
+Rotations = "1.0"
 StaticArrays = "0.12, 1.0"
 julia = "1"
