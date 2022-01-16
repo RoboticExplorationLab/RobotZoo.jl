@@ -12,6 +12,8 @@ Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+FiniteDiff = "2.10"
+ForwardDiff = "0.10"
 RobotDynamics = "0.4.1"
 Rotations = "1.0"
 StaticArrays = "0.12, 1.0"
