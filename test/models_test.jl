@@ -1,31 +1,35 @@
 const RD = RobotDynamics
 using RobotDynamics: KnotPoint, dynamics, dynamics!, jacobian!
 using RobotDynamics: StaticReturn, InPlace, ForwardAD, FiniteDifference
-function num_allocs(model; evals=1, samples=1, inplace=true) 
+function num_allocs(model; evals=1, samples=1, discrete=true) 
     dmodel = RD.DiscretizedDynamics{RD.RK4}(model)
     t,dt = 1.1,0.1
     x, u = rand(model)
     n,m = RD.dims(model)
-    xdot = zeros(n)
     z = KnotPoint(x, u, t, dt)
     ∇c  = zeros(n,n+m)
-    xn = zeros(n)
     allocs = 0
     allocs += @ballocated RobotDynamics.dynamics($model, $x, $u) evals=evals samples=samples
     allocs += @ballocated RobotDynamics.dynamics!($model, $xdot, $x, $u) evals=evals samples=samples
+    @test xdot == RobotDynamics.dynamics(model, x, u)
+    @test allocs == 0 
     allocs += @ballocated RobotDynamics.jacobian!(StaticReturn(), ForwardAD(), $model, $∇c, $xdot, $z) evals=evals samples=samples
     allocs += @ballocated RobotDynamics.jacobian!(StaticReturn(), FiniteDifference(), $model, $∇c, $xdot, $z) evals=evals samples=samples
+    @test allocs == 0 
     allocs += @ballocated RobotDynamics.jacobian!(InPlace(), ForwardAD(), $model, $∇c, $xdot, $z) evals=evals samples=samples
     allocs += @ballocated RobotDynamics.jacobian!(InPlace(), FiniteDifference(), $model, $∇c, $xdot, $z) evals=evals samples=samples
+    @test allocs == 0 
 
-    if inplace
-        allocs += @ballocated RobotDynamics.discrete_dynamics($dmodel, $z) evals=evals samples=samples
-        allocs += @ballocated RobotDynamics.discrete_dynamics!($dmodel, $xdot, $z) evals=evals samples=samples
-        allocs += @ballocated RobotDynamics.jacobian!(StaticReturn(), ForwardAD(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
-        allocs += @ballocated RobotDynamics.jacobian!(StaticReturn(), FiniteDifference(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
-        allocs += @ballocated RobotDynamics.jacobian!(InPlace(), ForwardAD(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
-        allocs += @ballocated RobotDynamics.jacobian!(InPlace(), FiniteDifference(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
-    end
+    # allocs = 0
+    # if discrete 
+    #     allocs += @ballocated RobotDynamics.discrete_dynamics($dmodel, $z) evals=evals samples=samples
+    #     allocs += @ballocated RobotDynamics.discrete_dynamics!($dmodel, $xdot, $z) evals=evals samples=samples
+    #     allocs += @ballocated RobotDynamics.jacobian!(StaticReturn(), ForwardAD(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
+    #     allocs += @ballocated RobotDynamics.jacobian!(StaticReturn(), FiniteDifference(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
+    #     allocs += @ballocated RobotDynamics.jacobian!(InPlace(), ForwardAD(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
+    #     allocs += @ballocated RobotDynamics.jacobian!(InPlace(), FiniteDifference(), $dmodel, $∇c, $xdot, $z) evals=evals samples=samples
+    #     @test allocs == 0 
+    # end
 
     return allocs
 end
@@ -80,12 +84,12 @@ RobotZoo.Pendulum{Float64}(1,1,1, 1,1,1)
 # Quadrotor
 quad = RobotZoo.Quadrotor()
 @test RD.dims(quad) == (13,4,13)
-@test num_allocs(quad, inplace=false) == 0
+@test num_allocs(quad, discrete=false) == 0
 
 # Yak Plane
 yak = RobotZoo.YakPlane(MRP{Float64})
 @test RD.dims(yak) == (12,4,12)
-@test num_allocs(yak, inplace=false) == 0
+@test num_allocs(yak, discrete=false) == 0
 
 # Test other functions
 dt = 0.1
