@@ -1,10 +1,12 @@
 const RD = RobotDynamics
 using RobotDynamics: KnotPoint, dynamics, dynamics!, jacobian!
 using RobotDynamics: StaticReturn, InPlace, ForwardAD, FiniteDifference
+using Random
 function test_model(model; evals=1, samples=1, tol=1e-6) 
     println(typeof(model))
     dmodel = RD.DiscretizedDynamics{RD.RK4}(model)
     t,dt = 1.1,0.1
+    Random.seed!(1)
     x, u = rand(model)
     n,m = RD.dims(model)
     z = KnotPoint(x, u, t, dt)
