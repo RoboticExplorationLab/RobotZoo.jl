@@ -32,7 +32,7 @@ RobotDynamics.control_dim(::DoubleIntegrator{N,M}) where {N,M} = M
     :(SVector{$N}($(vel...),$(us...)))
 end
 @generated function dynamics!(di::DoubleIntegrator{N,M}, xdot, x, u) where {N,M}
-    vel = [:(xdot[$i] = x[$i]) for i = M+1:N]
+    vel = [:(xdot[$i-M] = x[$i]) for i = M+1:N]
     us = [:(xdot[$(i+M)] = u[$i] + di.gravity[$i]) for i = 1:M]
     quote
         $(vel...)

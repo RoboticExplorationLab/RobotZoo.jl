@@ -2,12 +2,14 @@ const RD = RobotDynamics
 using RobotDynamics: KnotPoint, dynamics, dynamics!, jacobian!
 using RobotDynamics: StaticReturn, InPlace, ForwardAD, FiniteDifference
 function num_allocs(model; evals=1, samples=1, discrete=true) 
+    println(typeof(model))
     dmodel = RD.DiscretizedDynamics{RD.RK4}(model)
     t,dt = 1.1,0.1
     x, u = rand(model)
     n,m = RD.dims(model)
     z = KnotPoint(x, u, t, dt)
     ∇c  = zeros(n,n+m)
+    xdot = zeros(n)
     allocs = 0
     allocs += @ballocated RobotDynamics.dynamics($model, $x, $u) evals=evals samples=samples
     allocs += @ballocated RobotDynamics.dynamics!($model, $xdot, $x, $u) evals=evals samples=samples
