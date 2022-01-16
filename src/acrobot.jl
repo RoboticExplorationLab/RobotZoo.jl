@@ -12,10 +12,20 @@ with keyword arguments:
 * `m` - `SVector{2,T}` of link masses
 * `J` - `SVector{2,T}` of link inertias
 """
-@with_kw struct Acrobot{T} <: AbstractModel
-    l::SVector{2,T} = @SVector [1.0, 1.0]
-    m::SVector{2,T} = @SVector [1.0, 1.0]
-    J::SVector{2,T} = @SVector [1.0, 1.0]
+@autodiff struct Acrobot{T} <: ContinuousDynamics
+    l::SVector{2,T}
+    m::SVector{2,T}
+    J::SVector{2,T}
+end
+
+function Acrobot(;l=SA[1.,1.],m=SA[1.,1.],J=SA[1.,1.])
+    T = promote_type(eltype(l), eltype(m), eltype(J)) 
+    Acrobot{T}(SA[l[1],l[2]], SA[m[1],m[2]], SA[J[1],J[2]])
+end
+
+function Acrobot(l,m,J)
+    T = eltype(l)
+    Acrobot(SA[l[1],l[2]], SA[m[1],m[2]], SA[J[1],J[2]])
 end
 
 function dynamics(model::Acrobot, x, u)
@@ -54,6 +64,10 @@ function dynamics(model::Acrobot, x, u)
     τ = @SVector [0, u[1]]
     θddot = M\(τ - B - G - C)
     return @SVector [θ1dot, θ2dot, θddot[1], θddot[2]]
+end
+
+function dynamics!(model, xdot, x, u)
+    xdot .= dynamics(model, x, u)
 end
 
 RobotDynamics.state_dim(::Acrobot) = 4

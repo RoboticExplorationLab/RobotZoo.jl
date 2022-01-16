@@ -1,4 +1,3 @@
-using Parameters
 using StaticArrays
 
 """
@@ -12,7 +11,7 @@ Has 4 control inputs: throttle, aileron, elevator, rudder. All inputs nominally 
 
 where `R <: Rotation{3}`. See the source code for the keyword parameters and their default values.
 """
-@with_kw mutable struct YakPlane{R,T} <: RigidBody{R}
+@autodiff Base.@kwdef mutable struct YakPlane{R,T} <: RigidBody{R}
     g::T = 9.81; #Gravitational acceleration (m/s^2)
     rho::T = 1.2; #Air density at 20C (kg/m^3)
     m::T = .075; #Mass of plane (kg)
@@ -195,6 +194,20 @@ function RobotDynamics.dynamics(p::YakPlane, x::StaticVector, u::StaticVector, t
     #         p.Jinv*T];
     #
     RobotDynamics.build_state(p, rdot, qdot, vdot, wdot)
+end
+
+@generated function dynamics!(model::YakPlane{R}, xdot, x, u) where R
+    if R <: UnitQuaternion
+        Nx = 14
+    else
+        Nx = 12
+    end
+    quote
+        xstatic = SVector{$Nx}(x)
+        ustatic = SVector{4}(u)
+        xdot .= dynamics(model, x, u)
+        return nothing
+    end
 end
 
 "Angle of attack"

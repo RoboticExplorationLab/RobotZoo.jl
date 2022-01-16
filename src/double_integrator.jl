@@ -10,7 +10,7 @@ and `M` controls.
 where `D` is the dimensionality of the space in which the particle moves. For example,
 for a particle in 3D space, `D = 3`.
 """
-struct DoubleIntegrator{N,M} <: AbstractModel
+@autodiff struct DoubleIntegrator{N,M} <: ContinuousDynamics
     pos::SVector{M,Int}
     vel::SVector{M,Int}
     gravity::SVector{M,Float64}
@@ -30,6 +30,15 @@ RobotDynamics.control_dim(::DoubleIntegrator{N,M}) where {N,M} = M
     vel = [:(x[$i]) for i = M+1:N]
     us = [:(u[$i] + di.gravity[$i]) for i = 1:M]
     :(SVector{$N}($(vel...),$(us...)))
+end
+@generated function dynamics!(di::DoubleIntegrator{N,M}, xdot, x, u) where {N,M}
+    vel = [:(xdot[$i-M] = x[$i]) for i = M+1:N]
+    us = [:(xdot[$(i+M)] = u[$i] + di.gravity[$i]) for i = 1:M]
+    quote
+        $(vel...)
+        $(us...)
+        return nothing
+    end
 end
 
 Base.position(::DoubleIntegrator{<:Any,2}, x) = @SVector [x[1], x[2], 0]

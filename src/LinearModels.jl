@@ -9,7 +9,7 @@ Create a LinearModel of a `D`-dimensional double integrator, such that the state
 is `2*D` (`D` positions and `D` velocities). The model is continuous and non-affine.
 
 This is, in practice, identical to the `DoubleIntegrator` type in the base `RobotZoo`; 
-however the other is a child of `AbstractModel` whereas this one is explicitly a 
+however the other is a child of `ContinuousDynamics` whereas this one is explicitly a 
 `LinearModel`. Both are included for reference and performance comparisons.
 """ 
 function DoubleIntegrator(D=1)

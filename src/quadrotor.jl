@@ -18,7 +18,7 @@ where `R <: Rotation{3}` and defaults to `UnitQuaternion{Float64}` if omitted. T
 * `km` - motor torque constant (default = 0.0245)
 * `kf` - motor force constant (default = 1.0)
 """
-struct Quadrotor{R} <: RigidBody{R}
+@autodiff struct Quadrotor{R} <: RigidBody{R}
     mass::Float64
     J::SMatrix{3,3,Float64,9}
     Jinv::SMatrix{3,3,Float64,9}
@@ -104,7 +104,7 @@ function moments(model::Quadrotor, x, u)
     return tau
 end
 
-function wrenches(model::Quadrotor, x::SVector, u::SVector)
+function wrenches(model::Quadrotor, x, u)
     F = forces(model, x, u)
     M = moments(model, x, u)
     return [F; M]
