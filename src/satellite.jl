@@ -12,7 +12,7 @@ direct control over torques about the body axes.
 
 where `J` is a `Diagonal` inertia matrix.
 """
-struct Satellite <: LieGroupModel
+@autodiff struct Satellite <: LieGroupModel
     J::Diagonal{Float64,SVector{3,Float64}}
 end
 

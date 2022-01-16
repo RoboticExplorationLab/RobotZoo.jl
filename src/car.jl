@@ -8,8 +8,12 @@ A simple unicyle model with state vector  `[x,y,θ]` and control vector `[v,ω]`
 
 where `radius` is the radius of the car, used only for plotting and obstacle avoidance constraints.
 """
-@with_kw struct DubinsCar <: ContinuousDynamics
-    radius::Float64 = 0.175  # [m] radius of a Roomba
+DubinsCar
+@autodiff struct DubinsCar <: ContinuousDynamics
+    radius::Float64  # [m] radius of a Roomba
+    function DubinsCar(;radius=0.175)
+        new(radius)
+    end
 end
 RobotDynamics.state_dim(::DubinsCar) = 3
 RobotDynamics.control_dim(::DubinsCar) = 2
@@ -18,6 +22,12 @@ function dynamics(::DubinsCar,x,u)
     ẋ = @SVector [u[1]*cos(x[3]),
                   u[1]*sin(x[3]),
                   u[2]]
+end
+function dynamics!(::DubinsCar,x,u)
+    ẋ[1] = u[1]*cos(x[3])
+    ẋ[2] = u[1]*sin(x[3])
+    ẋ[3] = u[2]
+    return nothing
 end
 
 Base.position(::DubinsCar, x) = @SVector [x[1], x[2], 0.0]
@@ -42,11 +52,11 @@ with keyword arguments:
 * `L`: distance between the front and rear wheels
 * `lr`: distance from the center of gravity to the center of the rear wheel
 """
-@with_kw struct BicycleModel <: ContinuousDynamics
-    ref::Symbol = :cg
-    L::Float64  = 2.7   # distance between wheels  (m)
-    lr::Float64 = 1.5   # distance to rear wheels  (m)
-    function BicycleModel(ref::Symbol, L::Real, lr::Real)
+@autodiff struct BicycleModel <: ContinuousDynamics
+    ref::Symbol
+    L::Float64    # distance between wheels  (m)
+    lr::Float64   # distance to rear wheels  (m)
+    function BicycleModel(;ref::Symbol=:cg, L::Real=2.7, lr::Real=1.5)
         @assert ref ∈ (:cg, :front, :rear)
         @assert L > 0 "Vehicle length ($L) must be greater than 0"
         @assert L > lr "Vehicle length ($L) must be greater than the distance to the rear wheel ($lr)"
@@ -54,7 +64,10 @@ with keyword arguments:
     end
 end
 
-function dynamics(model::BicycleModel, x, u)
+fun = :foo
+args = [:(model::BicycleModel), :x, :u]
+
+body = quote
     v = u[1]  # longitudinal velocity (cmd)
     ϕ = u[2]  # steering angle rate   (cmd)
     θ = x[3]  # yaw
@@ -72,8 +85,20 @@ function dynamics(model::BicycleModel, x, u)
     end
     ẋ = v*c
     ẏ = v*s
+end
+@eval function dynamics(model::BicycleModel, x, u)
+    $body
     return SA[ẋ, ẏ, ω, ϕ]
 end
+@eval function dynamics!(model::BicycleModel, xdot, x, u)
+    $body
+    xdot[1] = ẋ
+    xdot[2] = ẏ
+    xdot[3] = ω
+    xdot[4] = ϕ
+    return nothing
+end
+
 state_dim(::BicycleModel) = 4
 control_dim(::BicycleModel) = 2
 

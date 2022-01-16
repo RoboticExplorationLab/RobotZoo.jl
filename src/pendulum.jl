@@ -14,13 +14,18 @@ with keyword arguments
 * `I` - inertia, in kg⋅m² (default=0.25)
 * `g` - gravity, in kg/m² (default=9.81)
 """
-@with_kw mutable struct Pendulum{T} <: ContinuousDynamics
-    mass::T = 1.
-    length::T = 0.5
-    b::T = 0.1
-    lc::T = 0.5
-    I::T = 0.25
-    g::T = 9.81
+
+@autodiff mutable struct Pendulum{T} <: ContinuousDynamics
+    mass::T
+    len::T
+    b::T
+    lc::T
+    I::T
+    g::T
+end
+function Pendulum(;mass=1., len=0.5, b=0.1, lc=0.5, I=0.25, g=9.81)
+    T = eltype(promote(mass, len, b, lc, I, g))
+    Pendulum{T}(mass, len, b, lc, I, g)
 end
 
 RobotDynamics.state_dim(::Pendulum) = 2

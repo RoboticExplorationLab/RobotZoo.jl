@@ -1,13 +1,13 @@
 module RobotZoo
 
 using StaticArrays
-using Parameters
 using RobotDynamics
 using Rotations
 using LinearAlgebra
+using ForwardDiff, FiniteDiff
 
-using RobotDynamics: ContinuousDynamics, RigidBody, LieGroupModel, ContinuousDynamics
-import RobotDynamics: dynamics!, dynamics, forces, moments, wrenches, inertia, inertia_inv, orientation
+using RobotDynamics: ContinuousDynamics, RigidBody, LieGroupModel, @autodiff
+import RobotDynamics: dynamics!, dynamics, jacobian!, forces, moments, wrenches, inertia, inertia_inv, orientation
 import RobotDynamics: state_dim, control_dim
 
 include("acrobot.jl")

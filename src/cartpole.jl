@@ -13,11 +13,15 @@ with keyword arguments
 * `l` - length of the pendulum, in m (default = 0.5)
 * `g` - gravity, in m/s² (default = 9.81)
 """
-struct Cartpole{T} <: ContinuousDynamics 
+@autodiff struct Cartpole{T} <: ContinuousDynamics 
     mc::T
     mp::T
     l::T
     g::T
+    function Cartpole(mc, mp, l, g)
+        T = eltype(promote(mc, mp, l, g))
+        new{T}(mc, mp, l, g)
+    end
 end
 
 Cartpole(; mc=1.0, mp=0.2, l=0.5, g=9.81) = Cartpole(mc, mp, l, g)
