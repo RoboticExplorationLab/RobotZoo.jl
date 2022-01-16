@@ -1,5 +1,5 @@
 ![CI](https://github.com/bjack205/RobotZoo.jl/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/bjack205/RobotZoo.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/bjack205/RobotZoo.jl)
+[![codecov](https://codecov.io/gh/RoboticExplorationLab/RobotZoo.jl/branch/master/graph/badge.svg?token=KWcOu2TFpd)](https://codecov.io/gh/RoboticExplorationLab/RobotZoo.jl)
 
 # RobotZoo.jl
 
