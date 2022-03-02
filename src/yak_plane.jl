@@ -78,7 +78,21 @@ control_dim(::YakPlane) = 4
 
 trim_controls(model::YakPlane) = @SVector [41.6666, 106, 74.6519, 106]
 
-function RobotDynamics.dynamics(p::YakPlane, x::StaticVector, u::StaticVector, t=0)
+function RobotDynamics.dynamics(p::YakPlane{<:UnitQuaternion}, x, u, t=0)
+    if isempty(u)
+        u = @SVector zeros(4)
+    end
+    yak_dynamics(p, SVector{13}(x), SVector{4}(u), t) 
+end
+
+function RobotDynamics.dynamics(p::YakPlane, x, u, t=0)
+    if isempty(u)
+        u = @SVector zeros(4)
+    end
+    yak_dynamics(p, SVector{12}(x), SVector{4}(u), t) 
+end
+
+function yak_dynamics(p::YakPlane, x::StaticVector, u::StaticVector, t=0)
     r,q,v,w = RobotDynamics.parse_state(p, x)
 
     Q = SMatrix(q)

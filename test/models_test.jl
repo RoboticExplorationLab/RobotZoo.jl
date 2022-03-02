@@ -64,7 +64,7 @@ test_model(cartpole)
 # Double Integrator
 dim = 3
 di = RobotZoo.DoubleIntegrator(dim)
-n,m = size(di)
+n,m = RD.dims(di)
 @test (n,m) == (6,3)
 test_model(di)
 
@@ -87,7 +87,7 @@ test_model(yak,tol=1e-4)
 # Test other functions
 dt = 0.1
 car = RobotZoo.DubinsCar()
-n,m = size(car)
+n,m = RD.dims(car)
 @test zeros(car) == (zeros(n), zeros(m))
 @test zeros(Int,car)[1] isa SVector{n,Int}
 @test fill(car,0.1) == (fill(0.1,n), fill(0.1,m))
