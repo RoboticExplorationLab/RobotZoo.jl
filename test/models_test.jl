@@ -26,7 +26,7 @@ function test_model(model; evals=1, samples=1, tol=1e-6, customjacobian=false)
     RobotDynamics.jacobian!(InPlace(), FiniteDifference(), model, ∇c1, xdot, z)
     @test ∇c1 ≈ ∇c2 atol=tol
     if customjacobian
-        RobotDynamics.jacobian!(InPlace(), UserDefined(), model, ∇c1, xdot, z)
+        RobotDynamics.jacobian!(InPlace(), RD.UserDefined(), model, ∇c1, xdot, z)
         @test ∇c1 ≈ ∇c2
     end
 end
@@ -39,7 +39,7 @@ test_model(acrobot)
 # Car
 car = RobotZoo.DubinsCar()
 @test RD.dims(car) == (3,2,3)
-test_model(car)
+test_model(car, customjacobian=true)
 
 # Bicycle Car
 bicycle = RobotZoo.BicycleModel()
