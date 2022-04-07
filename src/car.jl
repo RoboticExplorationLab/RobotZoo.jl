@@ -30,6 +30,17 @@ function dynamics!(::DubinsCar,x,u)
     return nothing
 end
 
+function jacobian!(::DubinsCar, J,xdot,x,u)
+    sθ,cθ = sincos(x[3])
+    J .= 0
+    J[1,3] = -u[1]*sθ
+    J[1,4] = cθ 
+    J[2,3] = u[1]*cθ
+    J[2,4] = sθ
+    J[3,5] = 1.0
+    return nothing
+end
+
 Base.position(::DubinsCar, x) = @SVector [x[1], x[2], 0.0]
 orientation(::DubinsCar, x) = expm(x[3]*@SVector [0,0,1.])
 

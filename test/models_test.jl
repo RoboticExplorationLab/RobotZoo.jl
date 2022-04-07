@@ -2,7 +2,7 @@ const RD = RobotDynamics
 using RobotDynamics: KnotPoint, dynamics, dynamics!, jacobian!
 using RobotDynamics: StaticReturn, InPlace, ForwardAD, FiniteDifference
 using Random
-function test_model(model; evals=1, samples=1, tol=1e-6) 
+function test_model(model; evals=1, samples=1, tol=1e-6, customjacobian=false) 
     println(typeof(model))
     dmodel = RD.DiscretizedDynamics{RD.RK4}(model)
     t,dt = 1.1,0.1
@@ -25,6 +25,10 @@ function test_model(model; evals=1, samples=1, tol=1e-6)
     @test ∇c1 ≈ ∇c2
     RobotDynamics.jacobian!(InPlace(), FiniteDifference(), model, ∇c1, xdot, z)
     @test ∇c1 ≈ ∇c2 atol=tol
+    if customjacobian
+        RobotDynamics.jacobian!(InPlace(), UserDefined(), model, ∇c1, xdot, z)
+        @test ∇c1 ≈ ∇c2
+    end
 end
 
 # Acrobot
