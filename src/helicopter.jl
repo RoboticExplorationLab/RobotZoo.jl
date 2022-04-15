@@ -1,45 +1,35 @@
-########################################################################
-#### CONTENTS:##########################################################
-## hat(v)
-## L(q)
-## qtoQ(q)
-## helicopter_dynamics(x, u)
-## set_heli_model!(vis::Visualizer) **commented out
-## animate(vis, X, T, h) **commented out
-########################################################################
+import Rotations: lmult, vmat, hmat
+using StaticArrays
 
+@autodiff struct Helicopter{R} <: RigidBody{R}
+    mass::Float64
+    Ixx::Float64
+    Iyy::Float64
+    Izz::Float64
+    J::SMatrix{3,3,Float64,9}
+    Jinv::SMatrix{3,3,Float64,9}
+    gravity::SVector{3,Float64}
 
-########################################################################
-#### Quaternion Functions: #############################################
-########################################################################
-########################################################################
-function hat(v)
-    return [0 -v[3] v[2]; v[3] 0 -v[1]; -v[2] v[1] 0]
+    hmr::Float64
+    omega_mr::Float64
+    Rmr::Float64
+
+    rho::Float64
+    Cd::Float64
+    Sx_fus::Float64
+    Sy_fus::Float64
+    Sz_fus::Float64
+    
+    ntr::Float64
+    omega_tr::Float64
+    Rtr::Float64
+    ltr::Float64 
+    htr::Float64 
+ 
 end
+control_dim(::Helicopter) = 4
 
-function L(q)
-    ## Computes Left Multiplier of Quaternion:
-    s = q[1]
-    v = q[2:4]
-    L = [s -v'; v (s * I + hat(v))]
-    return L
-end
-
-function qtoQ(q)
-    ## Converts Quaternion to Rotation Matrix
-    T = Diagonal([1; -ones(3)])
-    H = [zeros(1,3); I]
-    return H'*T*L(q)*T*L(q)*H
-end
-
-####################################################################
-#### X-CELL 60 SE Helicopter Dynamics: #############################
-####################################################################
-####################################################################
-function helicopter_dynamics(x, u)
-    # x: [x y z Quat u v w p q r wx wy wz wxdot wydot wzdot]'
-    # u: [a b Tmr Ttr]'
-
+function Helicopter{R}(;
     ########################################################################
     #### X-CELL 60 SE Helicopter Parameters: ###############################
     ########################################################################
@@ -53,50 +43,71 @@ function helicopter_dynamics(x, u)
     URL : https : //doi.org/10.1007/978-90-481-9707-1 54.
     =#
     ########################################################################
-    ## GRAVITY
-    g = 9.81 #m/s^2
-
     ## MASS
-    M = 8.2 #kg
+    mass = 8.2 #Kg
 
     ## INERTIA
     Ixx = 0.18 #kg m^2
     Iyy = 0.34 #kg m^2
     Izz = 0.28 #kg m^2
-    J = Diagonal([Ixx, Iyy, Izz])
+    J = Diagonal(@SVector[Ixx, Iyy, Izz])
+
+    ## GRAVITY
+    gravity = 9.81 #m/s^2
 
     ## MAIN ROTOR
     hmr = 0.235 #m
-    Ωmr = 167 #rad/s
+    omega_mr = 167 #rad/s
     Rmr = 0.775 #m
+
+    ## AIR PARAMETERS
+    rho = 1.204 #kg/m^3 #ρ
 
     ## DRAG PARAMETERS
     # https://www.engineeringtoolbox.com/drag-coefficient-d_627.html
     Cd = 1.17 #square flat plate 90degrees to the wind.
-
     Sx_fus = 0.1 #m^2
     Sy_fus = 0.22 #m^2
     Sz_fus = 0.15 #m^2
-
+    
     ## TAIL ROTOR
     ntr = 4.66 #Gear ratio of tr to mr
-    Ωtr = ntr * Ωmr #rad/s
+    omega_tr = ntr * omega_mr #rad/s
     Rtr = 0.13 #m
     ltr = 0.91 #m
-    htr = 0.08 #m
+    htr = 0.08 #m 
 
-    ## AIR PARAMETERS
-    rho = 1.204 #kg/m^3 #ρ
-    
+    ) where R
+    #@assert issymmetric(J)
+    Helicopter{R}(mass,Ixx,Iyy,Izz,J,inv(J),hmr,omega_mr,Rmr,rho,Cd,Sx_fus,Sy_fus,Sz_fus,ntr,omega_tr,Rtr,ltr,htr)
+end
 
-    ####################################################################
-    #### X-CELL 60 SE Helicopter Dynamics: #############################
-    ####################################################################
-    ####################################################################
-    #=   
-    #### NOTE ON STATES::                                                   
+#(::Type{Helicopter})(;kwargs...) = Helicopter{UnitQuaternion{Float64}}(;kwargs...)
+
+#@inline RobotDynamics.velocity_frame(model::Quadrotor) = model.bodyframe ? :body : :world_vector
+
+
+function trim_controls(model::Helicopter)
+    @SVector [7.354261, 0.0685781, 80.4419975, -16.2049026] #Hover conditions found by root-finding algorithm
+end
+
+####################################################################
+#### X-CELL 60 SE Helicopter Dynamics: #############################
+####################################################################
+####################################################################
+function dynamics(model::Helicopter, x::SVector, u::SVector)
+    """  
+    #### NOTE ON STATES::
+    x: [x y z Quat u v w p q r wx wy wz wxdot wydot wzdot]'                                                   
     x[14:16] --> wind velocities (estimated or ground-truth) 
     x[14:16] --> wind "accelerations" 
+
+    #### NOTE ON CONTROL INPUTS:
+    # u: [a b Tmr Ttr]'
+    u[1] = Main Rotor tilt angle with vertical in Helicopter's X-Z plane (*check!) 
+    u[2] = Main Rotor tilt angle with vertical in Helicopter's Y-Z plane
+    u[3] = Main Rotor Thrust
+    u[4] = Tail Rotor Thrust
 
     #### NOTE ON DYNAMICS:
     ASSUME: No blade-flapping dynamics;
@@ -104,37 +115,37 @@ function helicopter_dynamics(x, u)
             No stabilizer;
             Centre of Pressure == C.O.G
 
-    #### NOTE ON CONTROL INPUTS:
-    u[1] = Main Rotor tilt angle with vertical in Helicopter's X-Z plane (*check!) 
-    u[2] = Main Rotor tilt angle with vertical in Helicopter's Y-Z plane
-    u[3] = Main Rotor Thrust
-    u[4] = Tail Rotor Thrust
-    =#
-    ####################################################################
-    r = x[1:3] #x y z
-    q = x[4:7] # quaternion
-    v = x[8:10] #u v w
-    ω = x[11:13] #p q r
-    w = x[14:16] #wind-velocities
-    vw = x[17:19] #wind-velocity_dot
+    """
 
-    Q = qtoQ(q) #Rotation Matrix: [world_vector = Q * body_vector]
-    
+    m, g = model.mass, model.gravity
+    hmr, Rmr, omega_mr = model.hmr, model.Rmr, model.omega_mr
+    ltr, htr = model.ltr, model.htr
+    rho = model.rho
+    Cd  = model.Cd
+    Sx_fus, Sy_fus, Sz_fus = model.Sx_fus, model.Sy_fus, model.Sz_fus
+
+    r = SA[x[1], x[2], x[3]] #x y z
+    q = SA[x[4], x[5], x[6], x[7]] # quaternion #NEED TO NORMAILIZE???
+    v = SA[x[8], x[9], x[10]] #u v w
+    ω = SA[x[11], x[12], x[13]] #p q r
+    w = SA[x[14], x[15], x[16]] #wind-velocities
+    vw = SA[x[17], x[18], x[19]] #wind-velocity_dot
+
+    #Q = qtoQ(q) 
+    Q = hmat()' * lmult(q) * rmult(q)' * hmat() #Rotation Matrix: [world_vector = Q * body_vector] 
+
     ## MAIN ROTOR FORCES
     Xmr = -u[3] * u[1] #Force along Body-X
     Ymr = u[3] * u[2] #Force along Body-Y
     Zmr = -u[3] #Force along Body-Z
+    ## TAIL ROTOR FORCES
+    Ytr = u[4]
     
     ## MAIN ROTOR MOMENTS
     Lmr = Ymr * hmr #Moment about Body-X
     Mmr = -Xmr * hmr #Moment about Body-Y
-
     ## MAIN ROTOR YAW TORQUE AGAINST AIR
-    Qe = 0.0005 * rho * (Ωmr * Rmr)^2 * pi * Rmr^3  #(*Check Qe!)
-    
-    ## TAIL ROTOR FORCES
-    Ytr = u[4]
-    
+    Qe = 0.0005 * rho * (omega_mr * Rmr)^2 * pi * Rmr^3  #(*Check Qe!)
     ## TAIL ROTOR MOMENTS
     Ntr = -Ytr * ltr #Moment about Body-Z
     Ltr = Ytr * htr #Moment about Body-X
@@ -151,19 +162,36 @@ function helicopter_dynamics(x, u)
     g_matrix = Q' * [0; 0; -g]
     
     ## NEWTON-EULER'S EQUATIONS
-    #ṙ, q̇, v̇, ω̇ 
     r_dot = Q * v
-    q_dot = 0.5 * L(q) * H * ω
-    v_dot = [(v[2] * ω[3]) - (v[3] * ω[2]) - g_matrix[1] + ((Xmr + Xfus) / M);
-             (v[3] * ω[1]) - (v[1] * ω[3]) + g_matrix[2] + ((Ymr + Yfus + Ytr) / M);
-             (v[1] * ω[2]) - (v[2] * ω[1]) + g_matrix[3] + ((Zmr + Zfus) / M)]
-    
-    ω_dot = [((ω[2] * ω[3] * (Iyy - Izz)) + (Lmr + Ltr)) / Ixx;
+    q_dot = 0.5 * lmult(q) * hmat() * ω
+    v_dot = SA[(v[2] * ω[3]) - (v[3] * ω[2]) - g_matrix[1] + ((Xmr + Xfus) / m);
+             (v[3] * ω[1]) - (v[1] * ω[3]) + g_matrix[2] + ((Ymr + Yfus + Ytr) / m);
+             (v[1] * ω[2]) - (v[2] * ω[1]) + g_matrix[3] + ((Zmr + Zfus) / m)]
+    ω_dot = SA[((ω[2] * ω[3] * (Iyy - Izz)) + (Lmr + Ltr)) / Ixx;
              ((ω[1] * ω[3] * (Izz - Ixx)) + (Mmr)) / Iyy;
              ((ω[1] * ω[2] * (Ixx - Iyy)) + (-Qe + Ntr)) / Izz]
+
+
+    vw_dot = vw #wind dynamics are not known...it does not matter
+
+    return SA[r_dot; q_dot; v_dot; ω_dot; vw_dot; 0; 0; 0]  
     
-    #return [r_dot; q_dot; v_dot; ω_dot; vw; 0; 0; 0]    
 end
+
+
+"""
+RobotDynamics.inertia(model::Helicopter) = model.J
+RobotDynamics.inertia_inv(model::Helicopter) = model.Jinv
+RobotDynamics.mass(model::Helicopter) = model.mass
+
+function Base.zeros(model::Helicopter{R}) where R
+    x = RobotDynamics.build_state(model, zero(RBState))
+    u = @SVector fill()
+    return x, u
+
+end
+"""
+
 
 
 ####################################################################
