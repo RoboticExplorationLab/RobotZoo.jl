@@ -66,7 +66,7 @@ function dynamics(model::Acrobot, x, u)
     return @SVector [θ1dot, θ2dot, θddot[1], θddot[2]]
 end
 
-function dynamics!(model, xdot, x, u)
+function dynamics!(model::Acrobot, xdot, x, u)
     xdot .= dynamics(model, x, u)
 end
 

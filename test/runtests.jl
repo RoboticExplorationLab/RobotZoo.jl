@@ -4,6 +4,7 @@ using Test
 using StaticArrays
 using BenchmarkTools
 using Rotations
+using Random
 
 @testset "allocations" begin
     include("models_test.jl")
