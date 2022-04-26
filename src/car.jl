@@ -23,7 +23,7 @@ function dynamics(::DubinsCar,x,u)
                   u[1]*sin(x[3]),
                   u[2]]
 end
-function dynamics!(::DubinsCar,x,u)
+function dynamics!(::DubinsCar,ẋ,x,u)
     ẋ[1] = u[1]*cos(x[3])
     ẋ[2] = u[1]*sin(x[3])
     ẋ[3] = u[2]
