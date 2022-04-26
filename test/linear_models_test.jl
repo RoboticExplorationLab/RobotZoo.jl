@@ -5,6 +5,8 @@ using BenchmarkTools
 using FiniteDiff
 using LinearAlgebra
 using Test
+using Random
+Random.seed!(1)
 const RD = RobotDynamics
 
 # Continuous Linear model
@@ -192,5 +194,5 @@ du = randn(m) * 1e-2
 xn_exp = RD.discrete_dynamics(model_exp, dx, du, 0.0, h)
 xn_implicit = RD.discrete_dynamics(model_implicit, dx, du, 0, h) - model_implicit.d
 xn_explicit = RD.discrete_dynamics(model_explicit, dx, du, 0, h) - model_explicit.d
-@test norm(xn_exp - xn_implicit) < 1e-4
-@test norm(xn_exp - xn_explicit) < 1e-4
+@test norm(xn_exp - xn_implicit) < 1e-3
+@test norm(xn_exp - xn_explicit) < 1e-3

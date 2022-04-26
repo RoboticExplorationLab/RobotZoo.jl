@@ -6,10 +6,11 @@ using BenchmarkTools
 using Rotations
 using Random
 
-@testset "allocations" begin
+@testset "Allocations" begin
     include("models_test.jl")
 end
 
-# @testset "LinearModels" begin
-#     include("linear_models_test.jl")
-# end
+@testset "LinearModels" begin
+    include("linear_models_test.jl")
+    include("linear_models_examples_test.jl")
+end

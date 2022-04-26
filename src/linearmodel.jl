@@ -21,6 +21,12 @@ struct LinearModel{M,V} <: RD.ContinuousDynamics
     end
 end
 
+function LinearModel(A::AbstractMatrix, B::AbstractMatrix)
+    d = similar(A, size(A,1))
+    d .= 0
+    LinearModel(A, B, d)
+end
+
 function LinearModel(sig::RD.FunctionSignature, diffmethod::RD.DiffMethod, 
                      model::RD.ContinuousDynamics, x, u, t=zero(eltype(x)); affine::Bool=true)
     n,m = RD.dims(model)
