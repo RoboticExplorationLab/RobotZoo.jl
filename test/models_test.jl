@@ -83,6 +83,11 @@ quad = RobotZoo.Quadrotor()
 @test RD.dims(quad) == (13,4,13)
 test_model(quad,tol=1e-4)
 
+# Crazyflie
+cf = RobotZoo.Crazyflie()
+@test RD.dims(cf) == (13,4,13)
+test_model(cf,tol=1e-4)
+
 # Yak Plane
 yak = RobotZoo.YakPlane(MRP{Float64})
 @test RD.dims(yak) == (12,4,12)
