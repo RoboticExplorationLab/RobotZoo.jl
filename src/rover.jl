@@ -70,10 +70,8 @@ body = quote
     ẏ = v*s
     ω = v*tan(δ_in)       # yaw rate
     ϕ = -λ₁*(δ - δ_in) # steering angle rate
-    # ϕ = 0
     v̇ = a_in
     ȧ = -λ₂*(a - a_in)
-    # ȧ = 0
 end
 @eval function dynamics(model::Rover, x, u)
     $body
