@@ -25,22 +25,24 @@ To get more information on each model, refer to the documentation for each type,
 ## Example Usage
 ```julia
 using RobotZoo
-using RobotDynamics
+import RobotDynamics as RD
 
-model RobotZoo.Cartpole()
-n,m = size(model)
+model = RobotZoo.Cartpole()
+n,m = RD.dims(model)
 
 # Generate random state and control vector
 x,u = rand(model)
+t = 0.0   # time (s)
 dt = 0.1  # time step (s)
-z = KnotPoint(x,u,dt)
+z = RD.KnotPoint(x,u,t,dt)
 
 # Evaluate the continuous dynamics and Jacobian
 ẋ = dynamics(model, x, u)
-∇f = RobotDynamics.DynamicsJacobian(model)
-jacobian!(∇f, model, z)
+∇f = zeros(n, n + m)
+RD.jacobian!(RD.StaticReturn(), RD.ForwardAD(), model, ∇f, ẋ, model, z)
 
 # Evaluate the discrete dynamics and Jacobian
-x′ = discrete_dynamics(RK3, model, z)
-discrete_jacobian!(RK3, ∇f, model, z)
+dmodel = RD.DiscretizedDynamics{RD.RK4}(model)
+x′ = RD.discrete_dynamics(dmodel, model, x, u, t, dt)
+RD.discrete_jacobian!(RD.StaticReturn(), RD.ForwardAD(), dmodel, ∇f, x′, z)
 ```
