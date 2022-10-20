@@ -50,6 +50,11 @@ bicycle = RobotZoo.BicycleModel(ref=:rear)
 @test RD.dims(bicycle) == (4,2,4)
 test_model(bicycle)
 
+# Rover
+rover = RobotZoo.Rover()
+@test RD.dims(rover) == (6,2,6)
+test_model(rover)
+
 # Planar Rocket
 rocket = RobotZoo.PlanarRocket()
 @test RD.dims(rocket) == (8,2,8)
