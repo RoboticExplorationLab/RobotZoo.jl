@@ -25,57 +25,60 @@ Rover
     lr::Float64   # distance to rear wheels  (m)
     accel_lim::Float64
     steering_limit::Float64
-    function Rover(;ref::Symbol=:rear, L::Real=2.7, lr::Real=1.5, accel_lim::Real=2.5, steering_limit::Real=0.1)
+    function Rover(;ref::Symbol=:rear, L::Real=2.7, lr::Real=1.5, accel_lim::Real=4.0, steering_limit::Real=.15)
         @assert ref ∈ (:cg, :front, :rear)
         @assert L > 0 "Vehicle length ($L) must be greater than 0"
         @assert L > lr "Vehicle length ($L) must be greater than the distance to the rear wheel ($lr)"
         new(ref, L, lr, accel_lim, steering_limit)
     end
-
 end
 
 fun = :foo
 args = [:(model::Rover), :x, :u]
 
 body = quote
-    a_in = u[1]  # longitudinal acceleration (cmd)
-    δ_in = u[2]  # steering angle (cmd)     check order
+    α = u[1]  # longitudinal acceleration (cmd)
+    ϕ = u[2]  # steering angle rate (cmd)
 
-    if (-model.accel_lim > a_in)
-        a_in = -model.accel_lim
-    elseif a_in > model.accel_lim
-        a_in = model.accel_lim
+    if (-model.accel_lim > α)
+        α = -model.accel_lim
+    elseif α > model.accel_lim
+        α = model.accel_lim
     end
 
-    if (-model.steering_limit > δ_in)
-        δ_in = -model.steering_limit
-    elseif δ_in > model.steering_limit
-        δ_in = model.steering_limit
+    if (-model.steering_limit > ϕ)
+        ϕ = -model.steering_limit
+    elseif ϕ > model.steering_limit
+        ϕ = model.steering_limit
     end
 
-    s = x[1]
-    y = x[2]
     θ = x[3]  # yaw
     δ = x[4]  # steering angle
     v = x[5]
-    a = x[6]
 
     # Dynamics
-    λ₁ = 100
-    λ₂ = 100
-    c = cos(θ)
-    s = sin(θ)
+    # c = cos(θ)
+    # s = sin(θ)
+    
+    if model.ref == :cg
+        β = atan(model.lr * δ, model.L)
+        s,c = sincos(θ + β)
+        ω = v*cos(β)*tan(δ) / model.L
+    elseif model.ref == :rear
+        s,c = sincos(θ)
+        ω = v*tan(δ) / model.L
+    elseif model.ref == :front
+        s,c = sincos(θ + δ)
+        ω = v*sin(δ) / model.L
+    end
 
     ẋ = v*c
     ẏ = v*s
-    ω = v*tan(δ_in)       # yaw rate
-    ϕ = -λ₁*(δ - δ_in) # steering angle rate
-    v̇ = a_in
-    ȧ = -λ₂*(a - a_in)
+    v̇ = α
 end
 @eval function dynamics(model::Rover, x, u)
     $body
-    return SA[ẋ, ẏ, ω, ϕ, v̇, ȧ]
+    return SA[ẋ, ẏ, ω, ϕ, v̇]
 end
 @eval function dynamics!(model::Rover, xdot, x, u)
     $body
@@ -84,29 +87,8 @@ end
     xdot[3] = ω
     xdot[4] = ϕ
     xdot[5] = v̇
-    xdot[6] = ȧ
     return nothing
 end
 
-# using Rotations
-# using GeometryBasics: HyperRectangle, Vec, Point, Mesh
-# using MeshCat
-# using CoordinateTransformations
-# function visualize(filepath, xs)
-#     vis = Visualizer()
-#     render(vis)
-#     anim = Animation()
-#     rover_base_mesh = MeshFileGeometry(filepath + "/base.obj")
-#     rover_wheel_left = MeshFileGeometry("./Rover Model/frontwheel.obj")
-#     rover_wheel_right = MeshFileGeometry("./Rover Model/frontwheel.obj")
-#     setobject!(vis[:rc][:ori][:rover], rover_base_mesh)
-#     setobject!(vis[:rc][:ori][:rover][:wheelright][:steer], rover_wheel_right)
-#     setobject!(vis[:rc][:ori][:rover][:wheelleft][:steer], rover_wheel_left)
-#     settransform!(vis[:rc], Translation(0, -0.075, 0) ∘ LinearMap(RotX(π/2)))
-#     settransform!(vis[:rc][:ori], LinearMap(RotY(π)))
-#     settransform!(vis[:rc][:ori][:rover][:wheelleft], Translation(0.035, 0.06, 0.025) ∘ LinearMap(RotX(π)))
-#     settransform!(vis[:rc][:ori][:rover][:wheelright], Translation(0.035, 0, .125))
-# end
-
-state_dim(::Rover) = 6
+state_dim(::Rover) = 5
 control_dim(::Rover) = 2
