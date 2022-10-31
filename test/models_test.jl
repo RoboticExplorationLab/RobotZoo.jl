@@ -52,7 +52,7 @@ test_model(bicycle)
 
 # Rover
 rover = RobotZoo.Rover()
-@test RD.dims(rover) == (6,2,6)
+@test RD.dims(rover) == (5,2,5)
 test_model(rover)
 
 # Planar Rocket
