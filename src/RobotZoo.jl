@@ -23,6 +23,7 @@ include("yak_plane.jl")
 include("satellite.jl")
 include("freebody.jl")
 include("rocket.jl")
+include("helicopter.jl")
 
 include("random_linear.jl")
 include("linearmodel.jl")
