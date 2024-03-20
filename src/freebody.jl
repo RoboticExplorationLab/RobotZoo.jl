@@ -6,7 +6,7 @@ at the center of mass, for a total of 6 controls.
 
 # Constructors
     FreeBody{R,T}(mass, J)
-    FreeBody(R=UnitQuaternion{Float64}; kwargs...)
+    FreeBody(R=QuatRotation{Float64}; kwargs...)
 
 where `R <: Rotation{3}` with keyword arguments
 * `mass` - mass of the body
@@ -25,13 +25,13 @@ struct FreeBody{R,T} <: RigidBody{R}
 end
 RobotDynamics.control_dim(::FreeBody) = 6
 
-FreeBody(R=UnitQuaternion{Float64}; mass=1.0, J=@SVector ones(3)) =
+FreeBody(R=QuatRotation{Float64}; mass=1.0, J=@SVector ones(3)) =
     FreeBody{R,promote_type(typeof(mass), eltype(J))}(mass, J)
 
 function forces(model::FreeBody, x::StaticVector, u::StaticVector)
     q = orientation(model, x)
     F = @SVector [u[1], u[2], u[3]]
-    q*F  # world frame
+    q * F  # world frame
 end
 
 function moments(model::FreeBody, x::StaticVector, u::StaticVector)
@@ -43,8 +43,8 @@ function RobotDynamics.wrench_jacobian!(F, model::FreeBody, z)
     u = control(z)
     q = orientation(model, x)
     ir, iq, iv, iω, iu = RobotDynamics.gen_inds(model)
-    iF = SA[1,2,3]
-    iM = SA[4,5,6]
+    iF = SA[1, 2, 3]
+    iM = SA[4, 5, 6]
     F[iF, iq] .= Rotations.∇rotate(q, u[iF])
     F[iF, iu[iF]] .= RotMatrix(q)
     for i = 1:3
@@ -54,8 +54,8 @@ function RobotDynamics.wrench_jacobian!(F, model::FreeBody, z)
 end
 
 function RobotDynamics.wrench_sparsity(::FreeBody)
-    SA[false true  false false true;
-       false false false false true]
+    SA[false true false false true;
+        false false false false true]
 end
 
 inertia(model::FreeBody, x, u) = model.J

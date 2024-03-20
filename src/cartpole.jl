@@ -13,7 +13,7 @@ with keyword arguments
 * `l` - length of the pendulum, in m (default = 0.5)
 * `g` - gravity, in m/s² (default = 9.81)
 """
-@autodiff struct Cartpole{T} <: ContinuousDynamics 
+@autodiff struct Cartpole{T} <: ContinuousDynamics
     mc::T
     mp::T
     l::T
@@ -32,18 +32,18 @@ function dynamics(model::Cartpole, x, u)
     l = model.l   # length of the pole in m
     g = model.g  # gravity m/s^2
 
-    q = x[ @SVector [1,2] ]
-    qd = x[ @SVector [3,4] ]
+    q = x[@SVector [1, 2]]
+    qd = x[@SVector [3, 4]]
 
     s = sin(q[2])
     c = cos(q[2])
 
     H = @SMatrix [mc+mp mp*l*c; mp*l*c mp*l^2]
     C = @SMatrix [0 -mp*qd[2]*l*s; 0 0]
-    G = @SVector [0, mp*g*l*s]
+    G = @SVector [0, mp * g * l * s]
     B = @SVector [1, 0]
 
-    qdd = -H\(C*qd + G - B*u[1])
+    qdd = -H \ (C * qd + G - B * u[1])
     return [qd; qdd]
 end
 
@@ -55,4 +55,4 @@ RobotDynamics.state_dim(::Cartpole) = 4
 RobotDynamics.control_dim(::Cartpole) = 1
 
 # Base.position(::Cartpole, x::StaticVector) = SA[0,x[1],0]
-# RobotDynamics.orientation(::Cartpole, x::StaticVector) = UnitQuaternion(expm(SA[1,0,0]*x[2]))
+# RobotDynamics.orientation(::Cartpole, x::StaticVector) = QuatRotation(expm(SA[1,0,0]*x[2]))
