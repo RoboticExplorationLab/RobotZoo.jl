@@ -7,20 +7,20 @@ struct CopyModel{K,N,M,L} <: ContinuousDynamics
     uinds::Vector{SVector{M,Int}}
 end
 
-function CopyModel(model::L, K::Int) where L <: ContinuousDynamics
-    n,m = size(model)
+function CopyModel(model::L, K::Int) where {L<:ContinuousDynamics}
+    n, m = size(model)
     xind = SVector{n}(1:n)
     uind = SVector{m}(1:m)
-    xinds = [xind .+ (i-1)*n for i = 1:K]
-    uinds = [uind .+ (i-1)*m for i = 1:K]
+    xinds = [xind .+ (i - 1) * n for i = 1:K]
+    uinds = [uind .+ (i - 1) * m for i = 1:K]
     ix = SVector{n}(1:n)
     iu = SVector{m}(n .+ (1:m))
     return CopyModel{K,n,m,L}(model, ix, iu, xinds, uinds)
 end
 
-Base.size(::CopyModel{K,N,M}) where {K,N,M} = N*K,M*K
+Base.size(::CopyModel{K,N,M}) where {K,N,M} = N * K, M * K
 
-function build_state(model::CopyModel{K}, xs...) where K
+function build_state(model::CopyModel{K}, xs...) where {K}
     @assert length(xs) == K
     x = xs[1]
     for i = 2:K
@@ -30,23 +30,23 @@ function build_state(model::CopyModel{K}, xs...) where K
 end
 
 function Base.zeros(model::CopyModel{K,N,M}) where {K,N,M}
-    x,u = zeros(model.model)
-    return repeat(x,K), repeat(u,K)
+    x, u = zeros(model.model)
+    return repeat(x, K), repeat(u, K)
 end
 
-function Base.rand(model::CopyModel{K}) where K
-    x,u = rand(model.model)
+function Base.rand(model::CopyModel{K}) where {K}
+    x, u = rand(model.model)
     for i = 2:K
-        x_,u_ = rand(model.model)
+        x_, u_ = rand(model.model)
         x = [x; x_]
         u = [u; u_]
     end
-    return x,u
+    return x, u
 end
 
 
 function states(model::CopyModel{K,N,M}, x) where {K,N,M}
-    reshape(x,N,K)
+    reshape(x, N, K)
     return [x[i] for i in model.xinds]
 end
 
@@ -61,7 +61,7 @@ function states(model::CopyModel, Z::Traj, k::Int)
 end
 
 function controls(model::CopyModel{K,N,M}, u) where {K,N,M}
-    reshape(u,M,K)
+    reshape(u, M, K)
 end
 
 controls(model::CopyModel{K,L}, z::KnotPoint, k::Int) where {L,K} =
@@ -80,11 +80,11 @@ function TrajectoryOptimization.get_trajectory(model::CopyModel, Z::Traj, k::Int
     map(Z) do z
         x = state(z)[xinds[k]]
         u = control(z)[uinds[k]]
-        KnotPoint(x,u,z.dt,z.t)
+        KnotPoint(x, u, z.dt, z.t)
     end
 end
 
-function TrajectoryOptimization.dynamics(model::CopyModel{K}, x, u, t=0.0) where K
+function TrajectoryOptimization.dynamics(model::CopyModel{K}, x, u, t=0.0) where {K}
     xinds = model.xinds
     uinds = model.uinds
     xdot = dynamics(model.model, x[xinds[1]], u[uinds[1]], t)
@@ -96,10 +96,10 @@ function TrajectoryOptimization.dynamics(model::CopyModel{K}, x, u, t=0.0) where
 end
 
 function TrajectoryOptimization.discrete_dynamics(::Type{Q}, model::CopyModel{K},
-        z::KnotPoint) where {K,Q <: TrajectoryOptimization.Implicit}
+    z::KnotPoint) where {K,Q<:TrajectoryOptimization.Implicit}
     xinds = model.xinds
     uinds = model.uinds
-    x,u = state(z), control(z)
+    x, u = state(z), control(z)
     xdot = discrete_dynamics(Q, model.model, x[xinds[1]], u[uinds[1]], z.t, z.dt)
     for i = 2:K
         xdot_ = discrete_dynamics(Q, model.model, x[xinds[i]], u[uinds[i]], z.t, z.dt)
@@ -109,25 +109,25 @@ function TrajectoryOptimization.discrete_dynamics(::Type{Q}, model::CopyModel{K}
 end
 
 function TrajectoryOptimization.jacobian(model::CopyModel{K,N0,M0},
-        z::KnotPoint{T,N,M,NM}) where {K,N0,M0,T,N,M,NM}
-    A0 = @SMatrix zeros(N0,N0)
-    B0 = @SMatrix zeros(N0,M0)
+    z::KnotPoint{T,N,M,NM}) where {K,N0,M0,T,N,M,NM}
+    A0 = @SMatrix zeros(N0, N0)
+    B0 = @SMatrix zeros(N0, M0)
     ix = model.ix
     iu = model.iu
 
     xinds = model.xinds
     uinds = model.uinds
-    x,u = state(z), control(z)
+    x, u = state(z), control(z)
 
     # Process fist model
     z_ = [x[xinds[1]]; u[uinds[1]]]
     z_ = TrajectoryOptimization.StaticKnotPoint(z_, ix, iu, z.dt, z.t)
     ∇f = jacobian(model.model, z_)
-    A,B = ∇f[ix,ix], ∇f[ix,iu]
+    A, B = ∇f[ix, ix], ∇f[ix, iu]
     # append zeros after
     for i = 2:K
-        A = [A  A0]
-        B = [B  B0]
+        A = [A A0]
+        B = [B B0]
     end
 
     # loop over the rest of the models, appending below the first
@@ -135,7 +135,7 @@ function TrajectoryOptimization.jacobian(model::CopyModel{K,N0,M0},
         z_ = [x[xinds[i]]; u[uinds[i]]]
         z_ = TrajectoryOptimization.StaticKnotPoint(z_, ix, iu, z.dt, z.t)
         ∇f = jacobian(model.model, z_)
-        A_,B_ = ∇f[ix,ix], ∇f[ix,iu]
+        A_, B_ = ∇f[ix, ix], ∇f[ix, iu]
 
         # prepend zeros
         for j = 1:i-1
@@ -195,33 +195,33 @@ end
 # end
 
 function discrete_jacobian!(::Type{Q}, ∇f, model::Dynamics.CopyModel{K,N0,M0},
-		z::KnotPoint{T,N,M,NM}) where {T,N,M,NM,K,N0,M0,Q<:TrajectoryOptimization.Implicit}
+    z::KnotPoint{T,N,M,NM}) where {T,N,M,NM,K,N0,M0,Q<:TrajectoryOptimization.Implicit}
     xinds = model.xinds
     uinds = model.uinds
-	ix = model.ix
-	iu = model.iu
-	iz = [ix; iu; @SVector [N0+M0+1]]
-	x,u = state(z), control(z)
-	for i = 1:K
-		z_ = [x[xinds[i]]; u[uinds[i]]]
-		z_ = StaticKnotPoint(z_, ix, iu, z.dt, z.t)
-		∇f_ = discrete_jacobian(Q, model.model, z_)
-		A,B,C = ∇f_[ix,ix], ∇f_[ix,iu], ∇f_[ix,N0+M0+1]
+    ix = model.ix
+    iu = model.iu
+    iz = [ix; iu; @SVector [N0 + M0 + 1]]
+    x, u = state(z), control(z)
+    for i = 1:K
+        z_ = [x[xinds[i]]; u[uinds[i]]]
+        z_ = StaticKnotPoint(z_, ix, iu, z.dt, z.t)
+        ∇f_ = discrete_jacobian(Q, model.model, z_)
+        A, B, C = ∇f_[ix, ix], ∇f_[ix, iu], ∇f_[ix, N0+M0+1]
 
-		ix_ = ix .+ (i-1)*N0
-		iu_ = iu .+ (i-1)*M0 .+ N .- N0
-		it_ = NM+1
-		∇f[ix_,ix_] .= A
-		∇f[ix_,iu_] .= B
-		∇f[ix_,it_] .= C
-	end
+        ix_ = ix .+ (i - 1) * N0
+        iu_ = iu .+ (i - 1) * M0 .+ N .- N0
+        it_ = NM + 1
+        ∇f[ix_, ix_] .= A
+        ∇f[ix_, iu_] .= B
+        ∇f[ix_, it_] .= C
+    end
 end
 
-function state_diff_size(model::CopyModel{K}) where K
-    return state_diff_size(model.model)*K
+function state_diff_size(model::CopyModel{K}) where {K}
+    return state_diff_size(model.model) * K
 end
 
-state_diff(model::CopyModel, x::SVector, x0::SVector) = x-x0
+state_diff(model::CopyModel, x::SVector, x0::SVector) = x - x0
 function state_diff(model::CopyModel{K,N,M,L}, x::SVector, x0::SVector) where {K,N,M,L<:RigidBody}
     xinds = model.xinds
     dx = state_diff(model.model, x[xinds[1]], x0[xinds[1]])
@@ -234,7 +234,7 @@ end
 
 TrajectoryOptimization.state_diff_jacobian!(G, model::CopyModel, Z::Traj) = nothing
 function TrajectoryOptimization.state_diff_jacobian!(G,
-        model::CopyModel{<:Any,<:Any,<:Any,L}, Z::Traj) where {L<:RigidBody{R}} where R
+    model::CopyModel{<:Any,<:Any,<:Any,L}, Z::Traj) where {L<:RigidBody{R}} where {R}
     for k in eachindex(Z)
         G[k] .= state_diff_jacobian(model, state(Z[k]))
     end
@@ -243,15 +243,15 @@ end
 
 state_diff_jacobian(::CopyModel, x::SVector) = I
 @generated function state_diff_jacobian(model::CopyModel{K,N,M,L},
-        x::SVector) where {K,N,M,L<:RigidBody{R}} where R
-    if R <: UnitQuaternion
-        if R <: UnitQuaternion{T,IdentityMap} where T
+    x::SVector) where {K,N,M,L<:RigidBody{R}} where {R}
+    if R <: QuatRotation
+        if R <: QuatRotation{T,IdentityMap} where {T}
             return :(I)
         else
-            G0 = @SMatrix zeros(N,N-1)
+            G0 = @SMatrix zeros(N, N - 1)
         end
     else
-        G0 = @SMatrix zeros(N,N)
+        G0 = @SMatrix zeros(N, N)
     end
     quote
         xinds = model.xinds
@@ -274,19 +274,19 @@ state_diff_jacobian(::CopyModel, x::SVector) = I
 end
 
 @generated function TrajectoryOptimization.∇²differential(model::CopyModel{K,N,M,L},
-        x::SVector, dx::SVector) where {K,N,M,L<:RigidBody{R}} where R
+    x::SVector, dx::SVector) where {K,N,M,L<:RigidBody{R}} where {R}
 
-    if R <: UnitQuaternion
-        if R <: UnitQuaternion{T,IdentityMap} where T
-            return :(I*0)
+    if R <: QuatRotation
+        if R <: QuatRotation{T,IdentityMap} where {T}
+            return :(I * 0)
         else
-            G0 = @SMatrix zeros(N-1,N-1)
+            G0 = @SMatrix zeros(N - 1, N - 1)
         end
     else
-        G0 = @SMatrix zeros(N,N)
+        G0 = @SMatrix zeros(N, N)
     end
     quote
-        dx_ = reshape(dx,:,K)
+        dx_ = reshape(dx, :, K)
         ix_ = SVector{12}(1:12)
         xinds = model.xinds
         G = TrajectoryOptimization.∇²differential(model.model, x[xinds[1]], dx[ix_])
@@ -294,7 +294,7 @@ end
             G = [G $G0]
         end
         for i = 2:K
-            dx_ = dx[ix_ .+ (i-1)*12]
+            dx_ = dx[ix_.+(i-1)*12]
             G_ = TrajectoryOptimization.∇²differential(model.model, x[xinds[i]], dx_)
             for j = 1:i-1
                 G_ = [$G0 G_]
@@ -309,11 +309,11 @@ end
 end
 
 function ∇²differential!(G, model::Dynamics.CopyModel{K,N,M,L},
-        x::SVector, dx::Vector) where {K,N,M,L<:RigidBody{R}} where R
+    x::SVector, dx::Vector) where {K,N,M,L<:RigidBody{R}} where {R}
     ix = SVector{12}(1:12)
     xinds = model.xinds
     for i = 1:K
-        ix_ = ix .+ (i-1)*12
+        ix_ = ix .+ (i - 1) * 12
         dx_ = dx[ix_]
         G_ = ∇²differential(model.model, x[xinds[i]], dx_)
         G[ix_, ix_] .= G_
